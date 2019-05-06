@@ -1,9 +1,16 @@
 module DPP
-using LightGraphs,SparseArrays,LinearAlgebra,StatsBase,Clustering,Combinatorics
-export sample_pdpp,polyfeatures
+using LightGraphs,SparseArrays,LinearAlgebra,StatsBase,Clustering,Combinatorics,Distances,NearestNeighbors
+export sample_pdpp,polyfeatures,kmeans_coreset,sample_dsquared
 
 function vdm(x :: Array{T,1}, order :: Int) where T <: Real
     [u^k for u in x, k in 0:order-1]
+end
+
+#Empirical volume of Voronoi cell, used for weights in D^2 sampling
+function empirical_volume(X :: Matrix,ind :: Vector{Int})
+    tr=KDTree(X[:,ind])
+    idx,dst = knn(tr,X,1)
+    counts(reduce(vcat,idx))
 end
 
 function polyfeatures(X :: Array{T,2},order :: Int) where T <: Real
@@ -22,12 +29,21 @@ function polyfeatures(X :: Array{T,2},order :: Int) where T <: Real
     end
 end
 
+function kmeans_d2(X :: Array{T,2},set_size :: Int, k :: Int; nrep = 10) where T <: Real
+    ind = sample_dsquared(X,set_size)
+    w = float.(empirical_volume(X,ind))
+    @assert sum(w) ≈ size(X,2)
+    C = kmeans_restart(Matrix(X[:,ind]),k,nrep,w ./ sum(w)).centers
+    (centers=C,cluster=nnclass(X,C))
+end
+
 function kmeans_coreset(X :: Array{T,2},order :: Int, k :: Int; nrep = 10) where T <: Real
     U=Matrix(qr(polyfeatures(Matrix(X'),order)).Q)
     #@show size(U,2)
     w = 1 ./ vec(sum(U.^2;dims=(2)))
     pp = collect(sample_pdpp(U))
-    kmeans_restart(Matrix(X[:,pp]),k,nrep,w[pp])
+    C = kmeans_restart(Matrix(X[:,pp]),k,nrep,w[pp]).centers
+    (centers=C,cluster=nnclass(X,C))
 end
 
 function kmeans_restart(X :: Array{T1,2},k :: Int,nrep,weights :: Array{Float64,1}) where T1 <: Real
@@ -90,5 +106,30 @@ function sample_pdpp(U :: Array{T,2}) where T <: Real
     inds
 end
 
+function nnclass(X::Matrix,C::Matrix)
+    if (size(C,1) < 10)
+        tr=KDTree(C)
+    else
+        tr=BruteTree(C)
+    end
+    idx,dst = knn(tr,X,1)
+    reduce(vcat,idx)
+end
+
+
+function sample_dsquared(X::Matrix,nsamples :: Int)
+    m = size(X,1)
+    n = size(X,2)
+    set = zeros(Int,nsamples)
+    #initial point is sampled unif.
+    set[1] = rand(1:n)
+    d2 = colwise(SqEuclidean(),X,X[:,set[1]])
+    for i in 2:nsamples
+        set[i] = sample(Weights(d2))
+        dd = colwise(SqEuclidean(),X,X[:,set[i]])
+        d2 = min.(dd,d2)
+    end
+    set
+end
 
 end # module
