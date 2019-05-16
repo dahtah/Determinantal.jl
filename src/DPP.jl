@@ -271,6 +271,11 @@ function lap(G :: SimpleGraph)
     sparse(i,j,x)
 end
 
-
+function sample_ball(n :: Int,d :: Int)
+    X = randn(d,n)
+    X = X ./ sqrt.(sum( X .^ 2,dims=1))
+    r = rand(n).^(1/d)
+    r' .* X
+end
 
 end # module
