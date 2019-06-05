@@ -1,9 +1,8 @@
 module DPP
 using LightGraphs,SparseArrays,LinearAlgebra,StatsBase,Clustering,Combinatorics,Distances,NearestNeighbors,MLKernels,Optim
-export sample_pdpp,polyfeatures,kmeans_coreset,sample_dsquared,random_forest_direct,smooth_wilson,rff,gaussker,sample_dpp
-
-
-
+# export sample_pdpp,polyfeatures,kmeans_coreset,sample_dsquared,random_forest_direct,smooth_wilson,rff,gaussker,sample_dpp
+export sample,marginal_kernel,rescale!,FullRankEnsemble,LowRankEnsemble,show,
+    polyfeatures
 
 function nnclass(X::Matrix,C::Matrix)
     if (size(C,1) < 10)
@@ -176,6 +175,8 @@ function sample_ball(n :: Int,d :: Int)
     r = rand(n).^(1/d)
     r' .* X
 end
+
+include("lensemble.jl")
 include("laplacians.jl")
 include("features.jl")
 include("sampling.jl")

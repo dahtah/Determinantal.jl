@@ -12,20 +12,21 @@ Note that the number of monomials of degree r in dimension d equals ``{ d+r \\ch
 X is assumed to be of dimension ``d \\times n`` where d is the dimension and n is the number of points.
 """
 function polyfeatures(X :: Array{T,2},degree :: Int) where T <: Real
-    m = size(X,2)
+    m = size(X,1)
     if (m==1)
         vdm(vec(X),degree)
     else
-        g = (z) -> reduce(vcat,map((u) -> [ [u v] for v in 0:(degree-1) if  sum(u) + v < degree],z))
+        g = (z) -> reduce(vcat,map((u) -> [ [u, v] for v in 0:(degree-1) if  sum(u) + v < degree],z))
         dd = g(0:(degree))
         for i in 1:(m-2)
             dd = g(dd)
         end
-        reduce(hcat,[prod(X .^ d,dims=2) for d in dd])
+        reduce(hcat,[vec(prod(X .^ d,dims=1)) for d in dd])
         #[prod(X .^ d') for d in dd ]
         #dd
     end
 end
+
 """
     rff(X,m,σ)
 
