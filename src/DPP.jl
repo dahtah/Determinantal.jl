@@ -1,8 +1,7 @@
 module DPP
 using LightGraphs,SparseArrays,LinearAlgebra,StatsBase,Clustering,Combinatorics,Distances,NearestNeighbors,MLKernels,Optim
 # export sample_pdpp,polyfeatures,kmeans_coreset,sample_dsquared,random_forest_direct,smooth_wilson,rff,gaussker,sample_dpp
-export sample,marginal_kernel,rescale!,FullRankEnsemble,LowRankEnsemble,show,
-    polyfeatures
+export sample,marginal_kernel,gaussker,rescale!,FullRankEnsemble,LowRankEnsemble,ProjectionEnsemble,show, polyfeatures, rff
 
 function nnclass(X::Matrix,C::Matrix)
     if (size(C,1) < 10)

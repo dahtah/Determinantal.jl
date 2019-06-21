@@ -1,6 +1,6 @@
-#Functions for building coresets 
+#Functions for building coresets (WIP, do not use)
 
-function kmeans_d2(X :: Array{T,2},set_size :: Int, k :: Int; nrep = 10) where T <: Real
+function Kmeans_D2(X :: Array{T,2},set_size :: Int, k :: Int; nrep = 10) where T <: Real
     ind = sample_dsquared(X,set_size)
     w = float.(empirical_volume(X,ind))
     @assert sum(w) ≈ size(X,2)

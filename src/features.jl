@@ -10,6 +10,14 @@ return a matrix with columns 1,X[1,:],X[2,:],X[1,:].^2,X[2,:].^2,X[1,:]*X[2,:]
 Note that the number of monomials of degree r in dimension d equals ``{ d+r \\choose r}``
 
 X is assumed to be of dimension ``d \\times n`` where d is the dimension and n is the number of points.
+
+## Examples
+
+```
+X = randn(2,10) #10 points in dim 2
+polyfeatures(X,2) #Output has three columns
+```
+
 """
 function polyfeatures(X :: Array{T,2},degree :: Int) where T <: Real
     m = size(X,1)
@@ -34,6 +42,12 @@ Compute Random Fourier Features for the Gaussian kernel matrix with input points
 Returns a random matrix M such that, in expectation `` \\mathbf{MM}^t = \\mathbf{K}``, the Gaussian kernel matrix. 
 M has 2*m columns. The higher m, the better the approximation. 
 
+## Examples
+
+```
+X = randn(2,10) #10 points in dim 2
+rff(X,4,1.0)
+```
 See also: gaussker, kernelmatrix 
 """
 function rff(X :: Matrix, m, σ)
