@@ -10,9 +10,12 @@ export sample,marginal_kernel,gaussker,rescale!,FullRankEnsemble,LowRankEnsemble
 
 
 include("lensemble.jl")
+include("kdpp.jl")
+include("saddlepoint.jl")
 include("laplacians.jl")
 include("features.jl")
 include("sampling.jl")
 include("misc.jl")
+
 end # module
 

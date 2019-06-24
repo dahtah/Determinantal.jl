@@ -183,6 +183,7 @@ end
 
 
 
+
 """
      marginal_kernel(L::AbstractLEnsemble)
 
