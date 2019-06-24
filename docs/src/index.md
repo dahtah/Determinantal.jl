@@ -2,7 +2,7 @@
 
 DPP.jl provides some types and functions for sampling from DPPs (and related models). 
 
-# Quick start
+## Quick start
 
 To define a DPP, first define an L-ensemble. The L-ensemble can either be defined as:
 
@@ -42,13 +42,10 @@ Plots.scatter(X[1,:],X[2,:],color=:gray,alpha=.5)
 Plots.scatter!(X[1,ind],X[2,ind],color=:red,alpha=1)
 ```
 
-
+## Functions and types
 
 ```@autodocs
 Modules = [DPP]
 Order   = [:function, :type]
 ```
 
-```@docs
-rff
-```

@@ -83,9 +83,9 @@ uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 
 [[DiffEqDiffTools]]
 deps = ["LinearAlgebra", "SparseArrays", "StaticArrays"]
-git-tree-sha1 = "19add9fe03568da945997cd7052c3405b84d302f"
+git-tree-sha1 = "c83f4ce45d4b723f9d21b9ea3d314a503fd40def"
 uuid = "01453d9d-ee7c-5054-8395-0335cb756afa"
-version = "0.11.0"
+version = "0.12.0"
 
 [[DiffResults]]
 deps = ["Compat", "StaticArrays"]
