@@ -110,6 +110,7 @@ Example: points in 2d along the circle, and an exponential kernel
 ```
 t = LinRange(-pi,pi,10)'
 X = vcat(cos.(t),sin.(t))
+using MLKernels
 L=FullRankEnsemble(X,ExponentialKernel(.1))
 ```
 
@@ -156,7 +157,29 @@ function rescale!(L::ProjectionEnsemble,k)
     throw(ArgumentError("Cannot rescale a projection DPP: the set size is fixed and equals the rank."))
 end
 
+"""
+   inclusion_prob(L::AbstractLEnsemble)
 
+Compute first-order inclusion probabilities, i.e. the probability that each item in 1..n is included in the DPP.
+
+See also: marginal_kernel
+"""
+function inclusion_prob(L::AbstractLEnsemble)
+    val = L.α*L.λ ./ (1 .+ L.α*L.λ)
+    return sum( (L.U*Diagonal(sqrt.(val))).^2,dims=2)
+end
+
+function inclusion_prob(L::ProjectionEnsemble)
+    return sum( (L.U).^2,dims=2)
+end
+
+
+
+"""
+     marginal_kernel(L::AbstractLEnsemble)
+
+Compute and return the marginal kernel of a DPP, K. The marginal kernel of a DPP is a (n x n) matrix which can be used to find the inclusion probabilities. For any fixed set of indices ind, the probability that ind is included in a sample from the DPP equals det(K[ind,ind]). 
+"""
 function marginal_kernel(L::AbstractLEnsemble)
     val = L.α*L.λ ./ (1 .+ L.α*L.λ)
     L.U*Diagonal(val)*L.U'
