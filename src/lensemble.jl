@@ -47,11 +47,19 @@ mutable struct LowRankEnsemble{T} <: AbstractLEnsemble
 
     function LowRankEnsemble{T}(M::Matrix{T}) where T
         @assert size(M,1) >= size(M,2)
+        n,m = size(M);
         eg = eigen(M'*M)
         U = M*eg.vectors
         U = U ./ sqrt.(sum(U .^ 2,dims=1))
         λ = eg.values
-        n,m = size(M);
+        keep = (abs.(λ)  .> 10*eps(T)) .& (λ .> 0)
+        m_num = sum(keep)
+        if (m_num < m)
+            @warn "Numerical rank is lower than number of matrix columns"
+            U = U[:,keep]
+            λ = λ[keep]
+            m = m_num
+        end
         new(M,U,λ,n,m,T(1.0))
     end
 end

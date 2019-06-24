@@ -12,8 +12,9 @@ To define a DPP, first define an L-ensemble. The L-ensemble can either be define
 
 An example for full-rank L-ensembles:
 ```@example 1
+using DPP
 X = randn(2,1000) #1,000 points in dim 2
-L = gaussker(X,.5) |> FullRankEnsemble
+L = DPP.gaussker(X,.5) |> FullRankEnsemble
 rescale!(L,40)
 ind = sample(L) |> collect #sample returns a BitSet, we collect all indices
 
@@ -21,26 +22,33 @@ ind = sample(L) |> collect #sample returns a BitSet, we collect all indices
 using Plots
 Plots.scatter(X[1,:],X[2,:],color=:gray,alpha=.5)
 Plots.scatter!(X[1,ind],X[2,ind],color=:red,alpha=1)
-savefig("test.svg"); nothing
+savefig("test.svg"); # hide
 ```
+
 ![](test.svg)
+
 For low-rank ensembles, we can use an RFF approximation:
-```julia
-Lr = rff(X,100,.5) |> LowRankEnsemble
+```@example 1
+Lr = rff(X,150,.5) |> LowRankEnsemble
 rescale!(Lr,40)
 ind = sample(Lr) |> collect
-
-Plots.scatter(X[1,:],X[2,:],color=:gray,alpha=.5)
-Plots.scatter!(X[1,ind],X[2,ind],color=:red,alpha=1)
+Plots.scatter(X[1,:],X[2,:],color=:gray,alpha=.5) # hide 
+Plots.scatter!(X[1,ind],X[2,ind],color=:red,alpha=1) # hide 
+savefig("test2.svg") # hide 
 ```
+![](test2.svg)
+
 
 Example using polynomial features and a projection ensemble: 
-```julia
+```@example 1
 Lp = polyfeatures(X,10) |> LowRankEnsemble
 ind = sample(Lr) |> collect
-Plots.scatter(X[1,:],X[2,:],color=:gray,alpha=.5)
-Plots.scatter!(X[1,ind],X[2,ind],color=:red,alpha=1)
+Plots.scatter(X[1,:],X[2,:],color=:gray,alpha=.5) # hide 
+Plots.scatter!(X[1,ind],X[2,ind],color=:red,alpha=1) # hide 
+savefig("test3.svg"); # hide 
 ```
+![](test3.svg)
+
 
 ## Functions and types
 
