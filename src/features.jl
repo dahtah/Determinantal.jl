@@ -15,17 +15,17 @@ X is assumed to be of dimension ``d \\times n`` where d is the dimension and n i
 
 ```
 X = randn(2,10) #10 points in dim 2
-polyfeatures(X,2) #Output has three columns
+polyfeatures(X,2) #Output has 6 columns
 ```
 
 """
 function polyfeatures(X :: Array{T,2},degree :: Int) where T <: Real
     m = size(X,1)
     if (m==1)
-        vdm(vec(X),degree)
+        vdm(vec(X),degree+1)
     else
-        g = (z) -> reduce(vcat,map((u) -> [ [u, v] for v in 0:(degree-1) if  sum(u) + v < degree],z))
-        dd = g(0:(degree))
+        g = (z) -> reduce(vcat,map((u) -> [ [u, v] for v in 0:(degree+1) if  sum(u) + v < degree+1],z))
+        dd = g(0:(degree+1))
         for i in 1:(m-2)
             dd = g(dd)
         end

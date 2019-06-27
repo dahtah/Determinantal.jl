@@ -74,9 +74,9 @@ mutable struct ProjectionEnsemble{T} <: AbstractLEnsemble
         n,m = size(M);
         @assert size(M,1) >= size(M,2)
         if (orth)
-            U=M
-        else
             U=Matrix(qr(M).Q)
+        else
+            U=M
         end
         λ = ones(m)
         new(U,λ,n,m,T(1.0))
@@ -212,3 +212,6 @@ function sample(L::AbstractLEnsemble)
     incl = rand(L.m) .< val
     sample_pdpp(L.U[:,incl])
 end
+
+
+
