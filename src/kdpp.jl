@@ -35,16 +35,35 @@ function sample_diag_kdpp(L::AbstractLEnsemble,k)
     (k==0) && return set
     (k==L.m) && return 1:L.m
     s = 0
-    α_0 = solve_sp(L.λ,k)
+    α = solve_sp(L.λ,k)
+
     λ = L.λ
+    lp = zeros(length(λ))
+    lt = zeros(length(λ))
     for t in 1:L.m
-        α=solve_sp(λ[t:L.m],k-s)
-        #compute cond. inclusion probability
-        h=(1 .+ α*λ[t:L.m])
-        r=[sum(λ[t:L.m] .* (h.^-i)) for i in 1:3]
-        p = (λ[t]/h[1])*(r[3]/(h[1]*r[2]^2) - 1/(r[2]*h[1]^2) + α )
-        #@show p
-        #@assert p ≈ inclusion_prob_diag(λ[t:L.m],k-s)[1]
+        if (k-s == L.m-t+1) #prob accepting next == 1
+            p = 1
+        else
+            λ_sub = @view λ[t:end]
+            α=solve_sp(λ_sub,k-s;nu0=log(α))
+            #compute cond. inclusion probability
+            #h=(1 .+ α*λ[t:L.m])
+            #r=[sum(λ[t:L.m] .* (h.^-i)) for i in 1:3]
+            r = zeros(3)
+            for i in t:L.m
+                lp[i] = (1 .+ α*λ[i])
+                lt[i] = λ[i]
+                for j in 1:3
+                    lt[i] /= lp[i]
+                    r[j] += lt[i]
+                end
+            end
+            #@assert all(r .≈ r2)
+            #p = (λ[t]/h[1])*(r[3]/(h[1]*r[2]^2) - 1/(r[2]*h[1]^2) + α )
+            p = (λ[t]/lp[t])*(r[3]/(lp[t]*r[2]^2) - 1/(r[2]*lp[t]^2) + α )
+            #@assert p ≈ p2
+        end
+
         if (rand()<=p)
             push!(set,t)
             s+=1

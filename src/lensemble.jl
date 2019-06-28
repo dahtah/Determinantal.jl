@@ -214,4 +214,15 @@ function sample(L::AbstractLEnsemble)
 end
 
 
+"""
+    cardinal(L::AbstractLEnsemble)
+
+The size of the set sampled by a DPP is a random variable. This function returns its mean and standard deviation. See also: rescale!, which changes the mean set size.
+"""
+function cardinal(L::AbstractLEnsemble)
+     p = L.α*L.λ ./ (1 .+ L.α*L.λ)
+     (mean=sum(p),std=sqrt(sum(p.*(1 .- p))))
+end
+
+
 
