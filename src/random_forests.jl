@@ -110,19 +110,6 @@ function smooth_wilson(G :: SimpleGraph{T},q,y :: Vector;nrep=10,variant=1) wher
     end
     (xhat=xhat ./ nrep,nroots=nr/nrep)
 end
-function sum_by(v :: Array{T,1}, g :: Array{Int64,1}) where T
-    cc = spzeros(Int64,length(v))
-    vv = spzeros(Float64,length(v))
-    for i in 1:length(v)
-        vv[g[i]] += v[i]
-        cc[g[i]] += 1
-    end
-    nz = findnz(vv)
-    for i in nz[1]
-        vv[i] /= cc[i]
-    end
-    vv
-end
 
 
 function lap(G :: SimpleGraph)
