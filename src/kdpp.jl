@@ -2,10 +2,13 @@
 """
     inclusion_prob(L::AbstractLEnsemble,k)
 
-First-order inclusion probabilities in a k-DPP with L-ensemble L. Uses a (typically very accurate) saddlepoint approximation from Barthelmé, Amblard, Tremblay (2019). 
+First-order inclusion probabilities in a k-DPP with L-ensemble L. Uses a (typically very accurate) saddlepoint approximation from Barthelmé, Amblard, Tremblay (2019).
 """
 function inclusion_prob(L::AbstractLEnsemble,k)
     val = inclusion_prob_diag(L.λ,k)
+    val[val.<0] .= 0
+    val[val.>1] .= 1
+    val = (val ./ sum(val)) .* k
     return sum( (L.U*Diagonal(sqrt.(val))).^2,dims=2)
 end
 
@@ -21,9 +24,9 @@ end
 """
     sample(L::AbstractLEnsemble,k)
 
-Sample a k-DPP, i.e. a DPP with fixed size. k needs to be strictly smaller than the rank of L (if it equals the rank of L, use a ProjectionEnsemble). 
+Sample a k-DPP, i.e. a DPP with fixed size. k needs to be strictly smaller than the rank of L (if it equals the rank of L, use a ProjectionEnsemble).
 
-The algorithm uses a saddle-point approximation adapted from Barthelmé, Amblard, Tremblay (2019). 
+The algorithm uses a saddle-point approximation adapted from Barthelmé, Amblard, Tremblay (2019).
 """
 function sample(L::AbstractLEnsemble,k)
     incl = sample_diag_kdpp(L,k)

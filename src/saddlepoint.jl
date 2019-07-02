@@ -1,4 +1,4 @@
-#Functions for solving the saddlepoint equation of DPPs 
+#Functions for solving the saddlepoint equation of DPPs
 #Equivalent to finding a rescaling  α s.t. Tr(αL(αL + I)^-1) = k
 
 
@@ -26,10 +26,10 @@ end
 
 #find initial value for ν=log α
 function guess_nu(ls :: Vector, k :: Int)
-    -quantile(log.(ls),1-k/length(ls))
+    -StatsBase.quantile(log.(ls),1-k/length(ls))
 end
 
-#solve the saddlepoint eq. using Newton's method 
+#solve the saddlepoint eq. using Newton's method
 function solve_sp(ls :: AbstractVector, k :: Int; nu0=nothing, tol=0.001 ,maxit=100)
     (k >= length(ls)) && throw(ArgumentError("Error: k larger or equal to total number of eigenvalues: cannot find an appropriate rescaling"))
     if (nu0 == nothing)
@@ -77,4 +77,3 @@ end
 #     end
 #     return exp(nu)
 # end
-
