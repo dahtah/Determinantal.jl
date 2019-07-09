@@ -1,5 +1,3 @@
-using Yeppp
-
 function vdm(x :: Array{T,1}, order :: Int) where T <: Real
     [u^k for u in x, k in 0:order]
 end
