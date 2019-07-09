@@ -1,3 +1,5 @@
+using Yeppp
+
 function vdm(x :: Array{T,1}, order :: Int) where T <: Real
     [u^k for u in x, k in 0:order]
 end
@@ -90,8 +92,14 @@ function rff(X :: Matrix, m, σ)
     n = size(X,2)
     Ω = randn(d,m) / sqrt(σ^2)
     T = X'*Ω
-    [cos.(T) sin.(T)]/sqrt(m)
+    s = sqrt(m)
+    f = (x) -> cos(x)/s
+    g = (x) -> sin(x)/s
+    [f.(T) g.(T)]
 end
+
+
+
 
 function rff(X :: Matrix, m)
     rff(X,m,estmediandist(X))
