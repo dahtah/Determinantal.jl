@@ -19,21 +19,56 @@ polyfeatures(X,2) #Output has 6 columns
 ```
 
 """
-function polyfeatures(X :: Array{T,2},degree :: Int) where T <: Real
-    m = size(X,1)
-    if (m==1)
-        vdm(vec(X),degree+1)
+function polyfeatures2(X,degree)
+    d,n = size(X)
+    #   total number of features
+    k = binomial(d+degree,degree)
+    F = zeros(n,k)
+    tdeg = zeros(Int64,k)
+    if (d==1)
+        vdm(vec(X),degree)
     else
-        g = (z) -> reduce(vcat,map((u) -> [ hcat(u, v) for v in 0:(degree+1) if  sum(u) + v < degree+1],z))
-        dd = g(0:(degree+1))
-        for i in 1:(m-2)
-            dd = g(dd)
+        F[:,1:(degree+1)] = vdm(X[1,:],degree)
+        tdeg[1:(degree+1)] = 0:degree
+        tot = degree+1
+        for dd in 2:d
+            for i in 1:tot
+                delta = degree-tdeg[i]
+                if (delta > 0)
+                    idx = i
+                    for j in 1:delta
+                        F[:,tot+1] = F[:,idx] .* vec(X[dd,:])
+                        tot += 1
+                        tdeg[tot] = tdeg[idx]+1
+                        idx = tot
+                    end
+                end
+            end
         end
-        reduce(hcat,[vec(prod(X .^ d',dims=1)) for d in dd])
-        #[prod(X .^ d') for d in dd ]
-        #dd
     end
+    F
 end
+
+
+
+
+# function polyfeatures(X :: Array{T,2},degree :: Int) where T <: Real
+#     m = size(X,1)
+#     if (m==1)
+#         vdm(vec(X),degree+1)
+#     else
+#         g = (z) -> reduce(vcat,map((u) -> [ hcat(u, v) for v in 0:(degree+1) if  sum(u) + v < degree+1],z))
+#         dd = g(0:(degree+1))
+#         for i in 1:(m-2)
+#             dd = g(dd)
+#         end
+#         reduce(hcat,[vec(prod(X .^ d',dims=1)) for d in dd])
+#         #[prod(X .^ d') for d in dd ]
+#         #dd
+#     end
+# end
+
+
 
 """
     rff(X,m,σ)

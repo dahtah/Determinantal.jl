@@ -5,7 +5,7 @@ using Gadfly
 using Statistics
 using StatsBase
 using Clustering
-using RCall
+#using RCall
 using LinearAlgebra
 
 function gen_clust(M,csize;sigma2=1)

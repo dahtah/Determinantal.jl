@@ -1,5 +1,5 @@
 import StatsBase
-using RCall
+#using RCall
 #misc functions, to clean up
 
 #nearest-neighbour classifier
