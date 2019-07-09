@@ -19,7 +19,7 @@ polyfeatures(X,2) #Output has 6 columns
 ```
 
 """
-function polyfeatures2(X,degree)
+function polyfeatures(X,degree)
     d,n = size(X)
     #   total number of features
     k = binomial(d+degree,degree)
