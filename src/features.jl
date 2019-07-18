@@ -1,4 +1,3 @@
-using Yeppp
 
 function vdm(x :: Array{T,1}, order :: Int) where T <: Real
     [u^k for u in x, k in 0:order]
@@ -131,6 +130,6 @@ function estmediandist(X::Matrix;m=1000)
     else
         sel = 1:n
     end
-    median(pairwise(Euclidean(),X[:,sel],X[:,sel];dims=2))
+    StatsBase.median(pairwise(Euclidean(),X[:,sel],X[:,sel];dims=2))
 end
 
