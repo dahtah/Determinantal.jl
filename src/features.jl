@@ -26,7 +26,7 @@ function polyfeatures(X,degree)
     F = zeros(n,k)
     tdeg = zeros(Int64,k)
     if (d==1)
-        vdm(vec(X),degree)
+        F = vdm(vec(X),degree)
     else
         F[:,1:(degree+1)] = vdm(X[1,:],degree)
         tdeg[1:(degree+1)] = 0:degree
