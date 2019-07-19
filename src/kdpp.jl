@@ -50,8 +50,6 @@ function sample_diag_kdpp(L::AbstractLEnsemble,k)
             λ_sub = @view λ[t:end]
             α=solve_sp(λ_sub,k-s;nu0=log(α))
             #compute cond. inclusion probability
-            #h=(1 .+ α*λ[t:L.m])
-            #r=[sum(λ[t:L.m] .* (h.^-i)) for i in 1:3]
             r = zeros(3)
             for i in t:L.m
                 lp[i] = (1 .+ α*λ[i])
@@ -62,7 +60,6 @@ function sample_diag_kdpp(L::AbstractLEnsemble,k)
                 end
             end
             #@assert all(r .≈ r2)
-            #p = (λ[t]/h[1])*(r[3]/(h[1]*r[2]^2) - 1/(r[2]*h[1]^2) + α )
             p = (λ[t]/lp[t])*(r[3]/(lp[t]*r[2]^2) - 1/(r[2]*lp[t]^2) + α )
             #@assert p ≈ p2
         end
