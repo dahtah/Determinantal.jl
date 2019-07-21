@@ -1,5 +1,5 @@
 module DPP
-using LinearAlgebra,StatsBase,Combinatorics,Distances,MLKernels
+using LinearAlgebra,StatsBase,Combinatorics,Distances,MLKernels,LightGraphs
 import Base.show
 export sample,marginal_kernel,gaussker,rescale!,FullRankEnsemble,LowRankEnsemble,ProjectionEnsemble, polyfeatures, rff, inclusion_prob, cardinal
 
