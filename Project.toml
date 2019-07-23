@@ -1,10 +1,9 @@
 name = "DPP"
 uuid = "2673d5e8-682c-11e9-2dfd-471b09c6c819"
-authors = ["Simon Barthelme <simon.barthelme@grenoble-inp.fr>"]
+authors = ["Simon Barthelme <simon.barthelme@gipsa-lab.fr>", "Nicolas Tremblay <nicolas.tremblay@gipsa-lab.fr>"]
 version = "0.1.0"
 
 [deps]
-Clustering = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5"
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
 Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
 LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
