@@ -224,5 +224,68 @@ function cardinal(L::AbstractLEnsemble)
      (mean=sum(p),std=sqrt(sum(p.*(1 .- p))))
 end
 
+function diag(L::FullRankEnsemble)
+    diag(L.L)
+end
 
+function diag(L::LowRankEnsemble)
+    vec(sum(L.M.^2,dims=2))
+end
+function diag(L::ProjectionEnsemble)
+    vec(sum(L.U.^2,dims=2))
+end
+
+
+function getindex(L::FullRankEnsemble,I...)
+    getindex(L.L,I...)
+end
+
+function getindex(L::LowRankEnsemble,i1,i2)
+    A=getindex(L.M,i1,:)
+    B=getindex(L.M,i2,:)
+    A*B'
+end
+
+function getindex(L::LowRankEnsemble,i1,i2 :: Int)
+    A=getindex(L.M,i1,:)
+    B=getindex(L.M,i2,:)
+    A*B
+end
+
+function getindex(L::LowRankEnsemble,i1 :: Int,i2 :: Int)
+    A=getindex(L.M,i1,:)
+    B=getindex(L.M,i2,:)
+    dot(A,B)
+end
+
+
+function getindex(L::LowRankEnsemble,i1 :: Int,i2)
+    A=getindex(L.M,i1,:)
+    B=getindex(L.M,i2,:)
+    Matrix(A'*B')
+end
+
+function getindex(L::ProjectionEnsemble,i1,i2)
+    A=getindex(L.U,i1,:)
+    B=getindex(L.U,i2,:)
+    A*B'
+end
+
+function getindex(L::ProjectionEnsemble,i1,i2 :: Int)
+    A=getindex(L.U,i1,:)
+    B=getindex(L.U,i2,:)
+    A*B
+end
+
+function getindex(L::ProjectionEnsemble,i1::Int,i2 :: Int)
+    A=getindex(L.U,i1,:)
+    B=getindex(L.U,i2,:)
+    dot(A,B)
+end
+
+function getindex(L::ProjectionEnsemble,i1 :: Int,i2)
+    A=getindex(L.U,i1,:)
+    B=getindex(L.U,i2,:)
+    Matrix(A'*B')
+end
 
