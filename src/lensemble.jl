@@ -85,17 +85,17 @@ end
 
 function show(io::IO, e::FullRankEnsemble)
     println(io, "L-Ensemble with full-rank representation.")
-    println(io,"Number of points in ground set : $(e.n). Rescaling constant α=$(round(e.α,digits=3))")
+    println(io,"Number of items in ground set : $(nitems(e)). Rescaling constant α=$(round(e.α,digits=3))")
 end
 
 function show(io::IO, e::LowRankEnsemble)
     println(io, "L-Ensemble with low-rank representation.")
-    println(io,"Number of points in ground set : $(e.n). Rank : $(e.m). Rescaling constant α=$(round(e.α,digits=3))")
+    println(io,"Number of items in ground set : $(nitems(e)). Max. rank : $(maxrank(e)). Rescaling constant α=$(round(e.α,digits=3))")
 end
 
 function show(io::IO, e::ProjectionEnsemble)
     println(io, "Projection DPP.")
-    println(io,"Number of points in ground set : $(e.n). Rank : $(e.m).")
+    println(io,"Number of items in ground set : $(nitems(e)). Max. rank : $(maxrank(e)).")
 end
 
 """
@@ -225,7 +225,7 @@ function cardinal(L::AbstractLEnsemble)
 end
 
 function diag(L::FullRankEnsemble)
-    diag(L.L)
+    L.α*diag(L.L)
 end
 
 function diag(L::LowRankEnsemble)
@@ -237,55 +237,105 @@ end
 
 
 function getindex(L::FullRankEnsemble,I...)
-    getindex(L.L,I...)
+    L.α*getindex(L.L,I...)
 end
 
 function getindex(L::LowRankEnsemble,i1,i2)
     A=getindex(L.M,i1,:)
     B=getindex(L.M,i2,:)
-    A*B'
+    L.α*(A*B')
 end
 
 function getindex(L::LowRankEnsemble,i1,i2 :: Int)
     A=getindex(L.M,i1,:)
     B=getindex(L.M,i2,:)
-    A*B
+    L.α*(A*B)
 end
 
 function getindex(L::LowRankEnsemble,i1 :: Int,i2 :: Int)
     A=getindex(L.M,i1,:)
     B=getindex(L.M,i2,:)
-    dot(A,B)
+    L.α*dot(A,B)
 end
 
 
 function getindex(L::LowRankEnsemble,i1 :: Int,i2)
     A=getindex(L.M,i1,:)
     B=getindex(L.M,i2,:)
-    Matrix(A'*B')
+    L.α*Matrix(A'*B')
 end
 
 function getindex(L::ProjectionEnsemble,i1,i2)
     A=getindex(L.U,i1,:)
     B=getindex(L.U,i2,:)
-    A*B'
+    L.α*A*B'
 end
 
 function getindex(L::ProjectionEnsemble,i1,i2 :: Int)
     A=getindex(L.U,i1,:)
     B=getindex(L.U,i2,:)
-    A*B
+    L.α*A*B
 end
 
 function getindex(L::ProjectionEnsemble,i1::Int,i2 :: Int)
     A=getindex(L.U,i1,:)
     B=getindex(L.U,i2,:)
-    dot(A,B)
+    L.α*dot(A,B)
 end
 
 function getindex(L::ProjectionEnsemble,i1 :: Int,i2)
     A=getindex(L.U,i1,:)
     B=getindex(L.U,i2,:)
-    Matrix(A'*B')
+    L.α*Matrix(A'*B')
+end
+
+function log_prob(L::ProjectionEnsemble,ind)
+    if (length(ind)==maxrank(L))
+        logdet(L[ind,ind]) - logz(L)
+    else
+        return -Inf
+    end
+end
+
+
+function log_prob(L::AbstractLEnsemble,ind)
+    if (length(ind)<=maxrank(L))
+        logdet(L[ind,ind]) - logz(L)
+    else
+        return -Inf
+    end
+end
+
+function log_prob(L::AbstractLEnsemble,ind,k :: Int)
+    if (length(ind)==k && k <= maxrank(L))
+        logdet(L[ind,ind]) - logz(L,k)
+    else
+        return -Inf
+    end
+end
+
+function logz(L::AbstractLEnsemble)
+    sum(log1p.(eigenvalues(L)))
+end
+
+function logz(L::AbstractLEnsemble,k)
+    log_esp_sp(eigenvalues(L),k)[end]
+end
+
+function logz(L::ProjectionEnsemble)
+    0
+end
+
+
+for type in [:ProjectionEnsemble,:LowRankEnsemble,:FullRankEnsemble]
+    eval(:(nitems(L :: $type) = L.n))
+end
+
+for type in [:ProjectionEnsemble,:LowRankEnsemble,:FullRankEnsemble]
+    eval(:(maxrank(L :: $type) = L.m))
+end
+
+for type in [:ProjectionEnsemble,:LowRankEnsemble,:FullRankEnsemble]
+    eval(:(eigenvalues(L :: $type) = L.α*L.λ))
 end
 

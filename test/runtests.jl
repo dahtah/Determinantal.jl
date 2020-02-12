@@ -5,7 +5,7 @@ using LinearAlgebra
 
 const testdir = dirname(@__FILE__)
 tests = [
-    "solve_sp","sample_dpp","incl_prob"
+    "solve_sp","sample_dpp","incl_prob","density"
 ]
 
 @testset "DPP" begin
