@@ -2,9 +2,9 @@ module DPP
 using LinearAlgebra,StatsBase,Combinatorics,Distances,MLKernels
 import Base.show,Base.getindex,LinearAlgebra.diag
 export nitems,maxrank,
-    sample,marginal_kernel,gaussker,rescale!,FullRankEnsemble,LowRankEnsemble,ProjectionEnsemble,PPEnsemble,log_prob,
+    sample,marginal_kernel,gaussker,rescale!,AbstractLEnsemble,FullRankEnsemble,LowRankEnsemble,ProjectionEnsemble,PPEnsemble,log_prob,
     polyfeatures, rff, inclusion_prob, cardinal, greedy_subset,
-    esp, kl_divergence
+    esp, kl_divergence, total_variation
 
 include("lensemble.jl")
 include("kdpp.jl")
