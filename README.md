@@ -17,6 +17,9 @@ Tremblay, Nicolas, Simon Barthelmé, and Pierre-Olivier Amblard (2018) "Determin
 
 Simon Barthelmé & Nicolas Tremblay, Gipsa-lab, CNRS. 
 
+## See also 
 
+For a full-featured DPP toolkit in Python, see
+[DPPy](https://github.com/guilgautier/DPPy) by Guillaume Gautier.
 
 

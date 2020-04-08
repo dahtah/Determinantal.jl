@@ -1,0 +1,11 @@
+image: alpine:latest
+pages:
+  stage: deploy
+  script:
+  - cp -r docs/build public/  
+  - echo 'Nothing to do...'
+  artifacts:
+    paths:
+    - public
+  only:
+  - master

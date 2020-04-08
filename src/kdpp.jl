@@ -33,6 +33,8 @@ function sample(L::AbstractLEnsemble,k)
     sample_pdpp(L.U[:,collect(incl)])
 end
 
+
+
 function sample_diag_kdpp(L::AbstractLEnsemble,k)
     set = BitSet()
     (k==0) && return set
@@ -72,3 +74,79 @@ function sample_diag_kdpp(L::AbstractLEnsemble,k)
     end
     throw(ErrorException("Algorithm failed, did not reach the required number of samples"))
 end
+
+@doc raw"""
+
+    esp(L::AbstractLEnsemble,approx=false)
+
+Compute the elementary symmetric polynomials of the L-ensemble L, e₁(L) ...
+eₙ(L). e₁(L) is the trace and eₙ(L) is the determinant. The ESPs determine the
+distribution of the sample size of a DPP: 
+
+``p(|X| = k) = \frac{e_k}{\sum_{i=1}^n e_i}``
+
+The default algorithm uses the Newton equations, but may be unstable numerically
+for n large. If approx=true, a stable saddle-point approximation (as in
+Barthelmé et al. (2019)) is used instead for all eₖ with k>5. 
+
+"""
+function esp(L::AbstractLEnsemble,approx=false)
+    esp(L.λ,length(L.λ),approx)
+end
+
+function esp(ls,k=length(ls),approx = false)
+    if (!approx)
+        esp_newton(ls,k)
+    else
+        esp_sp(ls,k)
+    end
+end
+
+function esp_newton(ls,k=length(ls))
+    N = length(ls)
+    eprev = zeros(N+1,k+1)
+    eprev[:,1] .= 1.
+#    eprev[1,2:end] .= 0.
+    for l in 1:k
+        e = zeros(N+1)
+        for n in 1:N
+            e[n+1] = e[n]+ls[n]*eprev[n,l]
+        end
+        eprev[:,l+1] = e
+    end
+    eprev[N+1,2:end]
+end
+
+function esp_sp(ls,kmax=length(ls))
+    exp.(log_esp_sp(ls,kmax))
+end
+
+
+
+
+#compute (log) ESPs using saddlepoint approximation
+function log_esp_sp(ls,kmax=length(ls))
+    n = length(ls)
+    nu=-log(sum(ls[ls .> 0]))
+    l2pi=log(2*π)
+    logesp = zeros(kmax);
+    N_EXACT = 15
+    logesp[1:min(kmax,N_EXACT)] = log.(esp_newton(ls,min(kmax,N_EXACT)))
+    (kmax <= N_EXACT) && return logesp
+
+    for i in 1:(kmax)
+        if (i == n)
+            logesp[i] = sum(log.(ls))
+        else
+            nu=log(solve_sp(ls,i;nu0=nu))
+            p = ls*exp(nu)
+            sig = sum(@. p/((1+p)^2))
+            tmp = sum(log1p.(p))
+            if (i>N_EXACT)
+                logesp[i] = -i*nu + tmp  - .5*(l2pi+log(sig))
+            end
+        end
+    end
+    return logesp;
+end
+

@@ -25,5 +25,3 @@ function sample_pdpp(U :: Array{T,2}) where T <: Real
     end
     inds
 end
-
-
