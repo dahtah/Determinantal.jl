@@ -76,7 +76,12 @@ function rff(X :: Matrix, m, σ)
     [f.(T) g.(T)]
 end
 
-
+function nystrom_approx(K,ind)
+    Kaa = K[ind,ind]
+    U = cholesky(Kaa).L
+    #K[:,ind] * inv(U')
+    K[:,ind] / U'
+end
 
 
 function rff(X :: Matrix, m)

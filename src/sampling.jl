@@ -23,5 +23,5 @@ function sample_pdpp(U :: Array{T,2}) where T <: Real
             p[j] = 0
         end
     end
-    inds
+    collect(inds)
 end

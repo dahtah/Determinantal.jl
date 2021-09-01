@@ -82,3 +82,22 @@ function sample(L::PPEnsemble,k)
         sample_pdpp(L.Lproj.U)
     end
 end
+
+function inclusion_prob(L::PPEnsemble,k)
+    λ = eigenvalues(L.Lopt)
+    @assert k >= maxrank(L.Lproj)
+    m = k-maxrank(L.Lproj)
+    if (m==0)
+        sum((L.Lproj.U).^2,dims=2)
+    else
+        val = inclusion_prob_diag(λ,m)
+        val[val.<0] .= 0
+        val[val.>1] .= 1
+        val = (val ./ sum(val)) .* m
+        return sum( (L.Lopt.U*Diagonal(sqrt.(val))).^2,dims=2) + sum((L.Lproj.U).^2,dims=2)
+    end
+end
+
+function marginal_kernel(L::PPEnsemble)
+    marginal_kernel(L.Lopt)+marginal_kernel(L.Lproj)
+end

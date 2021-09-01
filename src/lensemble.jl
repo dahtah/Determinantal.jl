@@ -181,9 +181,6 @@ function inclusion_prob(L::ProjectionEnsemble)
     return sum( (L.U).^2,dims=2)
 end
 
-
-
-
 """
      marginal_kernel(L::AbstractLEnsemble)
 
@@ -327,11 +324,11 @@ function logz(L::ProjectionEnsemble)
 end
 
 
-for type in [:ProjectionEnsemble,:LowRankEnsemble,:FullRankEnsemble]
+for type in [:ProjectionEnsemble,:LowRankEnsemble,:FullRankEnsemble,:FullRankDPP]
     eval(:(nitems(L :: $type) = L.n))
 end
 
-for type in [:ProjectionEnsemble,:LowRankEnsemble,:FullRankEnsemble]
+for type in [:ProjectionEnsemble,:LowRankEnsemble,:FullRankEnsemble,:FullRankDPP]
     eval(:(maxrank(L :: $type) = L.m))
 end
 
