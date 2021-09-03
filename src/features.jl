@@ -53,7 +53,7 @@ end
 """
     rff(X,m,σ)
 
-Compute Random Fourier Features for the Gaussian kernel matrix with input points X and parameter σ.
+Compute Random Fourier Features [rahimi2007random](@cite) for the Gaussian kernel matrix with input points X and parameter σ.
 Returns a random matrix M such that, in expectation `` \\mathbf{MM}^t = \\mathbf{K}``, the Gaussian kernel matrix. 
 M has 2*m columns. The higher m, the better the approximation. 
 
@@ -76,12 +76,27 @@ function rff(X :: Matrix, m, σ)
     [f.(T) g.(T)]
 end
 
+
+
+function nystrom_approx(x,kfun,ind)
+    K_a = [kfun(x[:,i],x[:,j]) for i in 1:size(x,2), j in ind]
+    U = cholesky(K_a[ind,:]).L
+    #K[:,ind] * inv(U')
+    K_a / U'
+end
+
 function nystrom_approx(K,ind)
     Kaa = K[ind,ind]
     U = cholesky(Kaa).L
     #K[:,ind] * inv(U')
     K[:,ind] / U'
 end
+
+function nystrom_approx(K,m :: Integer)
+    ind = rand(1:size(K,1),m)
+    nystrom_approx(K,ind)
+end
+
 
 
 function rff(X :: Matrix, m)

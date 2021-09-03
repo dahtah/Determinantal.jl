@@ -148,3 +148,8 @@ Modules = [DPP]
 Order   = [:function, :type]
 ```
 
+# References
+
+```@bibliography
+```
+

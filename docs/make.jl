@@ -1,6 +1,9 @@
 push!(LOAD_PATH,"../src/")
 using Documenter, DPP
-makedocs(sitename="DPP.jl",
+using DocumenterCitations
+
+bib = CitationBibliography("biblio.bib")
+makedocs(bib,sitename="DPP.jl",
          format = Documenter.HTML(
                                       mathengine = MathJax(Dict(
                                           :TeX => Dict(
