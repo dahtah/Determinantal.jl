@@ -92,21 +92,34 @@ function sample_pdppc(U)
     collect(inds)
 end
 
-function sample_pdpp3(U) 
+function wsample(w :: AbstractVector,ttl)
+    u = rand()*ttl
+    i = 0
+    s = 0
+    while s < u
+        i+=1
+        s+=w[i]
+
+    end
+    i
+end
+
+
+function sample_pdpp3(U :: AbstractMatrix,lvg :: AbstractVector) 
     n = size(U,1)
     m = size(U,2)
     #Initial distribution
-    #uut = U*U'
-    #p = [((uut')[i,i]*ones(1))[1] for i in 1:n]
-    Um = Matrix(U)
-    p = vec(sum(Um.^2;dims=(2)))
+    #Um = Matrix(U)
+    p = lvg
     F = zeros(Float64,m,m)
     f = zeros(m)
     inds = BitSet()
+    ss = sum(lvg)
     @inbounds for i = 1:m
-        itm = StatsBase.sample(Weights(p))
+        itm = wsample(p,ss)
         push!(inds,itm)
-        v = vec(Matrix(U[itm,:]))
+        #v = vec(Matrix(U[itm,:]))
+        v = U[itm,:]
         if i==1
             f = vec(v)
         else
@@ -115,11 +128,14 @@ function sample_pdpp3(U)
         end
         F[:,i] = f / sqrt(dot(v,f))
         tmp = U*F[:,i]
-        @inbounds for j in 1:n
+        ss = 0;
+        @turbo for j in 1:n
             s = p[j] - tmp[j]^2
             p[j] = (s > 0 ? s : 0)
+            ss += p[j]
         end
         @inbounds for j in inds
+            ss -= p[j]
             p[j] = 0
         end
     end

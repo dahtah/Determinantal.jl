@@ -32,7 +32,8 @@ Here is an example of defining a very simple DPP in DPP.jl, over a set of size 2
 ```
 
 
-```{julia}
+```@example ex1
+using DPP
 #A 2x2 matrix, so here Ω={1,2}
 K = [3 1; 1 3]/4
 dpp = FullRankDPP(K)
@@ -50,7 +51,8 @@ p(\X=X) \propto \det \bL_{X}
 ```
 This equation relates the *likelihood* (probability mass function) of the DPP to the determinant of a submatrix. Subsets s.t. $\bL_{X}$ is large have a high probability of being selected. It is quite natural to define a L-ensemble based on kernel matrix that measures similarity (i.e. where $L_{ij}$ measures the similarity of points $i$ and $j$). Submatrices of $\bL$ with points that are unlike one another (diverse) will be closer to the identity matrix and therefore have a higher determinant. 
 The next example shows a more realistic use of DPP.jl
-```{julia}
+```@example ex1
+using LinearAlgebra
 x = randn(2,500) #some points in dim 2
 
 #compute a kernel matrix for the points in x 
@@ -60,19 +62,33 @@ rescale!(dpp,50) #scale so that the expected size is 50
 ind = sample(dpp) #a sample from the DPP (indices)
 
 using Plots
-scatter(x[1,:],x[2,:],marker_z = map((v) -> v ∈ ind, 1:size(x,2)),legend=:none,alpha=.75) #show the selected points in white
-savefig("example1.svg"); #hide
+pyplot() # hide
+     scatter(x[1,:],x[2,:],marker_z = map((v) -> v ∈ ind, 1:size(x,2)),legend=:none,alpha=.75) #show the selected points in white
+savefig("example1.svg"); nothing; # hide
 ```
 ![](example1.svg)
 
-The line `rescale!(dpp,50)` sets the expected size of the L-ensemble to 50. One could also decide to use a fixed-size DPP, and call instead `sample(dpp,50)`, which always returns a subset of size 50. For more on DPPs, L-ensembles, etc. see [ref].
+The line `rescale!(dpp,50)` sets the expected size of the L-ensemble to 50. One could also decide to use a fixed-size DPP, and call instead `sample(dpp,50)`, which always returns a subset of size 50. For more on DPPs, L-ensembles, etc. see  [tremblay2021extended](@cite).
+
+## Using other kernels 
+
+FullRankEnsemble requires a SPD matrix as input. For more exotic kernels than the Gaussian, you can either do things by hand or use [KernelFunctions.jl](https://github.com/JuliaGaussianProcesses/KernelFunctions.jl/), which DPP.jl supports. 
+
+```@example ex1
+using KernelFunctions
+x = randn(2,100)
+L = FullRankEnsemble(ColVecs(x),ExponentialKernel()) 
+```
+Here we need to specify whether the $2\times 100$ matrix  'x' should be considered to represent 100 points in dimension 2, or 2 points in dimension 100. ColVecs specifies the former, RowVecs the latter. This mechanism is borrowed from KernelFunctions and used in other places as well. 
+
+See the documentation of [KernelFunctions.jl](https://juliagaussianprocesses.github.io/KernelFunctions.jl/stable/userguide/) for a list of available kernels. 
 
 ## Using low-rank matrices for speed
 
 L-ensembles defined via 'FullRankEnsemble' are the most general kind but not very efficient. They require an eigendecomposition of the $\bL$ matrix, which comes at cost $\O(n^3)$. For practical applications in large $n$ it is preferable to use a low-rank ensemble, i.e. one such that $\bL = \bM \bM^t$ with $\bM$ a $n$ times $m$ matrix with $m \ll n$.
 
-The function rff computes a low-rank approximation (Random Fourier Features) to a Gaussian kernel matrix:
-```{julia}
+The function rff computes a low-rank approximation (Random Fourier Features, [rahimi2007random](@cite)) to a Gaussian kernel matrix:
+```@example ex1
 x = randn(2,1000) #some points in dim 2
 M = rff(x,150,.5) #second argument determines rank, third is standard deviation of Gaussian kernel
 lr=LowRankEnsemble(M)
@@ -83,8 +99,26 @@ scatter(x[1,:],x[2,:],marker_z = map((v) -> v ∈ ind, 1:size(x,2)),legend=:none
 ```
 Using low-rank representations DPP.jl can scale up to millions of points. Keep in mind that DPPs have good scaling in the size of $\Omega$ (n) but poor scaling in the rank ($m$, number of columns of $\bM$). The overall cost scales as $\O(nm^2)$, so $m$ should be kept in the hundreds at most. 
 
+As an alternative to Random Fourier Features, we also provide an implementation of the Nyström approximation [williams2001using](@cite). The function again returns a matrix $\bM$ such that $\bL \approx \bM \bM^t$, but the approximation is formed using a subset of points. 
+```@example ex1
+x = randn(3,1000)
+M_n =  nystrom_approx(ColVecs(x),SqExponentialKernel(),50) #use 50 points
+L = FullRankEnsemble(ColVecs(x),SqExponentialKernel())
+L_n = LowRankEnsemble(M_n)
+
+#Show the low-rank approximation to the spectrum
+plot(sort(L.λ,rev=:true))
+plot!(sort(L_n.λ,rev=:true),legend=:false)
+```
+
+Not all subsets give good Nyström approximations. You can indicate a specific subset to use:
+```@example ex1
+nystrom_approx(ColVecs(x),SqExponentialKernel(),1:50); #use first 50 points
+```
+
+
 Instead of using low-rank approximations to kernel matrices, you can also design your own features 
-```{julia}
+```@example ex1
 x = randn(3,1000)
 #some non-linear features we've just made up
 feat = (xi,xj,a) -> @. exp(-a*xi*xj)*cos(xi+xj)
@@ -96,12 +130,12 @@ sample(ll)
 ```
 
 A sensible set of features to use are multivariate polynomial features, here used to set up a ProjectionEnsemble (a special case of a low-rank DPP that has fixed sample size, equal to rank of $\bM$)
-```@example 1
+```@example ex1
 x = randn(2,1000)
 Lp = polyfeatures(x,10) |> ProjectionEnsemble
 ind = sample(Lp) 
-Plots.scatter(X[1,:],X[2,:],color=:gray,alpha=.5) # hide 
-Plots.scatter!(X[1,ind],X[2,ind],color=:red,alpha=1) # hide 
+Plots.scatter(x[1,:],x[2,:],color=:gray,alpha=.5) # hide 
+Plots.scatter!(x[1,ind],x[2,ind],color=:red,alpha=1) # hide 
 savefig("test3.svg"); # hide 
 ```
 ![](test3.svg)
@@ -111,12 +145,12 @@ savefig("test3.svg"); # hide
 
 An attractive aspect of DPPs is that inclusion probabilities are easy to compute. An inclusion probability is the probability that a certain item (or items) is included in the random set produced by a DPP. 
 
-```@example 1
+```@example ex1
 using StatsBase,Statistics
 #sample 1,000 times and compute empirical inclusion frequencies 
-reps = [StatsBase.counts(sample(Lr),1:Lr.n) for _ in 1:1000];
+reps = [StatsBase.counts(sample(Lp),1:Lp.n) for _ in 1:1000];
 #compare to theoretical values
-scatter(inclusion_prob(Lr),mean(reps))
+scatter(inclusion_prob(Lp),mean(reps))
 savefig("example_incl.svg"); nothing # hide 
 ```
 ![](example_incl.svg)
@@ -124,10 +158,10 @@ savefig("example_incl.svg"); nothing # hide
 So far these are just first-order inclusion probabilities. More generally, you can obtain higher-order probabilities (ie prob that items i,j,k,... are in the set *jointly*) from the marginal kernel of the DPP, given by "marginal_kernel"
 
 In the next example we compute the empirical inclusion probability of a set of items:
-```@example 1
-using LinearAlgebra,Statistics
-X = randn(2,10)
-L = DPP.gaussker(X,.5) |> FullRankEnsemble
+```@example ex1
+using Statistics
+x = randn(2,10)
+L = DPP.gaussker(ColVecs(x),.5) |> FullRankEnsemble
 rescale!(L,4)
 set = [3,5]
 
@@ -137,9 +171,50 @@ emp = mean(incl)
 ```
 
 The theoretical value is given by 
-```@example 1
-th = det(marginal_kernel(L)[[3,5],[3,5]])
+```@example ex1
+th = det(marginal_kernel(L)[set,set])
 ```
+
+# Other sampling methods
+
+DPP.jl offers other sampling methods that are based on inter-point distances. 
+
+In these algorithms, the initial point is selected uniformly. At all subsequent steps, the next point is selected based on its distance to the current set $\X(t)$, meaning $d_t(x,\X(t)) = \min  \{ d(x,x_i) | x_i \in \X(t) \}$. 
+The sampling probability depends on the method. In farthest-point sampling, which is deterministic, at each step, the point selected is one that is farthest from all currently selected points. 
+In D²-sampling [vassilvitskii2006k](@cite), which is a relaxed stochastic version of farthest-point sampling,  points are selected with prob. proportional to squared distance to the current set.
+
+```@example ex1
+x = rand(2,1000);
+ind = distance_sampling(ColVecs(x),40,:farthest)
+scatter(x[1,:],x[2,:],marker_z = map((v) -> v ∈ ind, 1:size(x,2)),legend=:none,title="Farthest-point sample")
+```
+
+```@example ex1
+ind = distance_sampling(ColVecs(x),40,:d2)
+scatter(x[1,:],x[2,:],marker_z = map((v) -> v ∈ ind, 1:size(x,2)),legend=:none,title="D² sample")
+```
+
+You can obtain other methods by changing how the prob. of selection depends on the distance. For instance, selecting points uniformly as long as they are more than distance $r$ away from the other points gives a so-called "hard sphere" sample. 
+```@example ex1
+ind = distance_sampling(ColVecs(x),40,(v)-> v >.5) #may get fewer than 40 points
+scatter(x[1,:],x[2,:],marker_z = map((v) -> v ∈ ind, 1:size(x,2)),legend=:none,title="Hard-sphere sample")
+```
+
+Distance-based sampling is quite general, all it needs is a (pseudo-)distance matrix. 
+```@example ex1
+D = [sum(abs.(a-b)) for a in eachcol(x), b in eachcol(x)] #L1 distance
+ind = distance_sampling(D,40,(v)-> v >.5) #may get fewer than 40 points
+scatter(x[1,:],x[2,:],marker_z = map((v) -> v ∈ ind, 1:size(x,2)),legend=:none,title="Hard-sphere sample in L1 distance")
+```
+
+For datasets that are large, it may not be wise (or even possible) to pre-compute and hold a full distance matrix in memory. You can use the LazyDist type, which behaves like a standard matrix, but whose entries are computed on-the-fly and not stored:
+```@example ex1
+D = LazyDist(ColVecs(x),(a,b) -> sum(abs.(a-b)))
+D[3,1] #not pre-computed!
+ind = distance_sampling(D,40,(v)-> v >.5);
+```
+
+
 
 ## Functions and types
 

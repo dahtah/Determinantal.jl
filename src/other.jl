@@ -48,13 +48,26 @@ end
 
 
 
+"""
+    distance_sampling(x,m,sampling)
 
-function distance_sampling(x :: Union{ColVecs,RowVecs},m,sampling=:d2)
+    Select a random subset of size m from x based on a greedy distance criterion. The initial point is selected uniformly. Then, if sampling == :farthest, at each step, the point selected is one that is farthest from all currently selected points. If sampling == :d2, the algorithm is D²-sampling [vassilvitskii2006k](@vassilvitskii2006k), which is a relaxed stochastic version of farthest-point sampling (selecting points with prob. proportional to squared distance).
+
+   ```
+    x = rand(2,200);
+    ind = distance_sampling(x,40,:farthest)
+    scatter(x[1,:],x[2,:],marker_z = map((v) -> v ∈ ind, 1:size(x,2)),legend=:none)
+   ```
+"""
+function distance_sampling(x :: AbstractVector,m,sampling=:d2)
     distance_sampling(LazyDist(x),m,sampling)
 end
 
-function distance_sampling(D :: AbstractMatrix,m,sampling=:d2)
-    @assert sampling ∈ [:d2,:farthest]
+function distance_sampling(D :: AbstractMatrix,m,sampling :: Union{Symbol,Function})
+    @assert size(D,1) == size(D,2)
+    if (isa(sampling,Symbol))
+        @assert sampling ∈ [:d2,:farthest]
+    end
     n = size(D,1)
     ind = BitSet()
     i = rand(1:n)
@@ -65,6 +78,13 @@ function distance_sampling(D :: AbstractMatrix,m,sampling=:d2)
             i = StatsBase.sample(Weights(dd.^2))
         elseif (sampling == :farthest)
             i = argmax(dd)
+        elseif (isa(sampling,Function))
+            w = sampling.(dd)
+            if (all(w .== 0))
+                return collect(ind)
+            else
+                i = StatsBase.sample(Weights(w))
+            end
         end
         push!(ind,i)
         dd[i] = 0

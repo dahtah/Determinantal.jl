@@ -26,11 +26,15 @@ mutable struct FullRankEnsemble{T} <: AbstractLEnsemble
         n = size(L,1);
         new(L,U,λ,n,n,T(1.0))
     end
-    function FullRankEnsemble{T}(X::Matrix{T},k :: Kernel) where T
-        V = kernelmatrix(Val(:col),k,X)
-        FullRankEnsemble{T}(V)
-    end
+    # function FullRankEnsemble{T}(X::AbstractVector{T},k :: Kernel) where T
+    #     V = kernelmatrix(Val(:col),k,X)
+    #     FullRankEnsemble{T}(V)
+    # end
+
 end
+
+
+
 
 @doc raw"""
 This type represents an L-ensemble where the matrix L is low rank. This enables faster computation. 
@@ -106,25 +110,30 @@ Construct a full-rank ensemble from a matrix. Here the matrix must be square.
 FullRankEnsemble(V::Matrix{T}) where T = FullRankEnsemble{T}(V)
 
 
+
+
+
 """
    FullRankEnsemble(X::Matrix{T},k :: Kernel)
 
 Construct a full-rank ensemble from a set of points and a kernel function.
 
-X (the set of points) is assumed to have dimension d x n, where d is the dimension and n is the number of points.
-k is a kernel (see doc for package MLKernels)
+X is vector of column vectors (ColVecs) or a vector of row vectors (RowVecs)
+k is a kernel (see doc for package KernelFunctions.jl)
 
 Example: points in 2d along the circle, and an exponential kernel
 ```
 t = LinRange(-pi,pi,10)'
 X = vcat(cos.(t),sin.(t))
-using MLKernels
-L=FullRankEnsemble(X,ExponentialKernel(.1))
+using KernelFunctions
+L=FullRankEnsemble(ColVecs(X),ExponentialKernel())
 ```
 
 """
-FullRankEnsemble(X::Matrix{T},k :: Kernel) where T = FullRankEnsemble{T}(X,k)
-
+function FullRankEnsemble(X::AbstractVector,k :: Kernel)
+    V = kernelmatrix(k,X)
+    FullRankEnsemble(V)
+end
 
 @doc raw"""
    LowRankEnsemble(V::Matrix{T})

@@ -77,15 +77,22 @@ function rff(X :: Matrix, m, σ)
 end
 
 
-
-function nystrom_approx(x,kfun,ind)
-    K_a = [kfun(x[:,i],x[:,j]) for i in 1:size(x,2), j in ind]
+function nystrom_approx(x :: AbstractVector,ker :: Kernel,ind)
+    #K_a = [kfun(x[:,i],x[:,j]) for i in 1:size(x,2), j in ind]
+    K_a = kernelmatrix(ker,x,x[ind])
     U = cholesky(K_a[ind,:]).L
     #K[:,ind] * inv(U')
     K_a / U'
 end
 
-function nystrom_approx(K,ind)
+function nystrom_approx(x :: AbstractVector,ker :: Kernel, m :: Integer)
+    ind = sortperm(rand(length(x)))[1:m]
+    @show length(ind)
+    nystrom_approx(x,ker,ind)
+end
+
+
+function nystrom_approx(K :: Matrix,ind)
     Kaa = K[ind,ind]
     U = cholesky(Kaa).L
     #K[:,ind] * inv(U')
@@ -107,28 +114,34 @@ end
 """
     gaussker(X,σ)
 
-Compute the Gaussian kernel matrix for X and parameter σ, ie. a matrix with entry i,j
+Compute the Gaussian kernel matrix for points X and parameter σ, ie. a matrix with entry i,j
 equal to ``\\exp(-\\frac{(x_i-x_j)^2}{2σ^2})``
 
-See also: rff, kernelmatrix 
+If σ is missing, it is set using the median heuristic. If the number of points is very large, the median is estimated on a random subset. 
+
+```@example
+x = randn(2,6)
+gaussker(ColVecs(x),.1)
+```
+
+See also: rff, KernelMatrix:kernelmatrix 
 """
-function gaussker(X::Matrix,σ)
-    tau = 1/(2*σ^2)
-    kernelmatrix(Val(:col),SquaredExponentialKernel(tau),X)
+function gaussker(X::AbstractVector,σ)
+    kernelmatrix(with_lengthscale(SqExponentialKernel(),σ),X)
 end
 
-function gaussker(X::Matrix)
+function gaussker(X::AbstractVector)
     gaussker(X,estmediandist(X))
 end
 
 #Quick estimate for median distance
-function estmediandist(X::Matrix;m=1000)
-    n = size(X,2)
+function estmediandist(X::AbstractVector;m=1000)
+    n = length(X)
     if (n > m)
-        sel = sample(1:n,m)
+        sel = rand(1:n,m)
     else
         sel = 1:n
     end
-    StatsBase.median(pairwise(Euclidean(),X[:,sel],X[:,sel];dims=2))
+    StatsBase.median(KernelFunctions.pairwise(Euclidean(),X[sel],X[sel]))
 end
 

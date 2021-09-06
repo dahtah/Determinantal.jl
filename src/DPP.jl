@@ -7,7 +7,8 @@ export nitems,maxrank,
     log_prob,
     polyfeatures, rff, inclusion_prob, cardinal, greedy_subset,
     esp, kl_divergence, total_variation, 
-    RowVecs,ColVecs,LazyDist,distance_sampling
+    RowVecs,ColVecs,LazyDist,distance_sampling,
+    nystrom_approx
 
 
 include("marginal_ker.jl")
