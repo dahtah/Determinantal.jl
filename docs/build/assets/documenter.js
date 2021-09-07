@@ -49,6 +49,10 @@ MathJax.Hub.Config({
         "|#1\\rangle",
         1
       ],
+      "bM": [
+        "\\mathbf{M}",
+        0
+      ],
       "bra": [
         "\\langle#1|",
         1
@@ -64,6 +68,10 @@ MathJax.Hub.Config({
       "defd": "≝",
       "bL": [
         "\\mathbf{L}",
+        0
+      ],
+      "O": [
+        "\\mathcal{O}",
         0
       ]
     }

@@ -53,7 +53,7 @@ end
 
     Select a random subset of size m from x based on a greedy distance criterion. The initial point is selected uniformly. Then, if sampling == :farthest, at each step, the point selected is one that is farthest from all currently selected points. If sampling == :d2, the algorithm is D²-sampling [vassilvitskii2006k](@vassilvitskii2006k), which is a relaxed stochastic version of farthest-point sampling (selecting points with prob. proportional to squared distance).
 
-   ```
+   ```@example
     x = rand(2,200);
     ind = distance_sampling(x,40,:farthest)
     scatter(x[1,:],x[2,:],marker_z = map((v) -> v ∈ ind, 1:size(x,2)),legend=:none)
@@ -92,3 +92,19 @@ function distance_sampling(D :: AbstractMatrix,m,sampling :: Union{Symbol,Functi
     end
     collect(ind)
 end
+
+
+function bernoulli_process(p,nrep=1)
+    if (nrep>1)
+        [ findall(rand(length(p)) .<= p) for _ in 1:nrep]
+    else
+        findall(rand(length(p)) .<= p)
+    end
+end
+
+function matched_poisson(L :: AbstractLEnsemble,nrep)
+    p = inclusion_prob(L)
+    bernoulli_process(p)
+end
+
+

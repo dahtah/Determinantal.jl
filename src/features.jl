@@ -3,32 +3,36 @@ function vdm(x :: Array{T,1}, order :: Int) where T <: Real
 end
 
 """
-    polyfeatures(X,order)
+    polyfeatures(x,order)
 
-Compute monomial features up to a certain degree. For instance, if X is a 2 x n matrix and the degree argument equals 2, it will
-return a matrix with columns 1,X[1,:],X[2,:],X[1,:].^2,X[2,:].^2,X[1,:]*X[2,:]
+Compute monomial features up to a certain degree. For instance, if the input consists in vectors in ℝ², then the monomials of degree ≤ 2 are 1,x₁,x₂,x₁x₂,x₁²,x₂²
 Note that the number of monomials of degree r in dimension d equals ``{ d+r \\choose r}``
 
-X is assumed to be of dimension ``d \\times n`` where d is the dimension and n is the number of points.
+If the input points are in d > 1, indicate whether the input x is d * n or n * d using ColVecs or RowVecs.
+
+The output has points along rows and monomials along columns.
 
 ## Examples
 
 ```
-X = randn(2,10) #10 points in dim 2
-polyfeatures(X,2) #Output has 6 columns
+x = randn(2,10) #10 points in dim 2
+polyfeatures(ColVecs(x),2) #Output has 10 rows and 6 column
+polyfeatures(RowVecs(x),2) #Output has 2 rows and 66 columns
+
 ```
 
 """
-function polyfeatures(X,degree)
-    d,n = size(X)
+function polyfeatures(x :: AbstractVector,degree)
+    n = length(x)
+    d = length(x[1])
     #   total number of features
     k = binomial(d+degree,degree)
     F = zeros(n,k)
     tdeg = zeros(Int64,k)
     if (d==1)
-        F = vdm(vec(X),degree)
+        F = vdm(x,degree)
     else
-        F[:,1:(degree+1)] = vdm(X[1,:],degree)
+        F[:,1:(degree+1)] = vdm([x[1] for x in x],degree)
         tdeg[1:(degree+1)] = 0:degree
         tot = degree+1
         for dd in 2:d
@@ -37,7 +41,7 @@ function polyfeatures(X,degree)
                 if (delta > 0)
                     idx = i
                     for j in 1:delta
-                        F[:,tot+1] = F[:,idx] .* vec(X[dd,:])
+                        F[:,tot+1] = F[:,idx] .* [x[dd] for x in x]
                         tot += 1
                         tdeg[tot] = tdeg[idx]+1
                         idx = tot
@@ -48,6 +52,7 @@ function polyfeatures(X,degree)
     end
     F
 end
+
 
 
 """
@@ -76,7 +81,21 @@ function rff(X :: Matrix, m, σ)
     [f.(T) g.(T)]
 end
 
+"""
+    nystrom_approx(x :: AbstractVector,ker :: Kernel,ind)
 
+Compute a low-rank approximation of a kernel matrix (with kernel "ker") using the rows and columns indexed by "ind".
+
+```@example
+using KernelFunctions
+x = rand(2,100)
+K = kernelmatrix(SqExponentialKernel(),ColVecs(x))
+#build a rank 30 approx. to K
+V = nystrom_approx(ColVecs(x),SqExponentialKernel(),1:30)
+norm(K-V*V') #should be small
+```
+
+"""
 function nystrom_approx(x :: AbstractVector,ker :: Kernel,ind)
     #K_a = [kfun(x[:,i],x[:,j]) for i in 1:size(x,2), j in ind]
     K_a = kernelmatrix(ker,x,x[ind])

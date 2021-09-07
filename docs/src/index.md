@@ -63,10 +63,8 @@ ind = sample(dpp) #a sample from the DPP (indices)
 
 using Plots
 pyplot() # hide
-     scatter(x[1,:],x[2,:],marker_z = map((v) -> v ∈ ind, 1:size(x,2)),legend=:none,alpha=.75) #show the selected points in white
-savefig("example1.svg"); nothing; # hide
+scatter(x[1,:],x[2,:],marker_z = map((v) -> v ∈ ind, 1:size(x,2)),legend=:none,alpha=.75) #hide 
 ```
-![](example1.svg)
 
 The line `rescale!(dpp,50)` sets the expected size of the L-ensemble to 50. One could also decide to use a fixed-size DPP, and call instead `sample(dpp,50)`, which always returns a subset of size 50. For more on DPPs, L-ensembles, etc. see  [tremblay2021extended](@cite).
 
@@ -114,6 +112,7 @@ plot!(sort(L_n.λ,rev=:true),legend=:false)
 Not all subsets give good Nyström approximations. You can indicate a specific subset to use:
 ```@example ex1
 nystrom_approx(ColVecs(x),SqExponentialKernel(),1:50); #use first 50 points
+nothing; # hide
 ```
 
 
@@ -127,6 +126,7 @@ M = reduce(hcat,ftrs)
 ll = LowRankEnsemble(M)
 rescale!(ll,14)
 sample(ll)
+nothing; # hide
 ```
 
 A sensible set of features to use are multivariate polynomial features, here used to set up a ProjectionEnsemble (a special case of a low-rank DPP that has fixed sample size, equal to rank of $\bM$)
@@ -136,9 +136,8 @@ Lp = polyfeatures(x,10) |> ProjectionEnsemble
 ind = sample(Lp) 
 Plots.scatter(x[1,:],x[2,:],color=:gray,alpha=.5) # hide 
 Plots.scatter!(x[1,ind],x[2,ind],color=:red,alpha=1) # hide 
-savefig("test3.svg"); # hide 
 ```
-![](test3.svg)
+
 
 
 # Inclusion probabilities 
@@ -151,9 +150,7 @@ using StatsBase,Statistics
 reps = [StatsBase.counts(sample(Lp),1:Lp.n) for _ in 1:1000];
 #compare to theoretical values
 scatter(inclusion_prob(Lp),mean(reps))
-savefig("example_incl.svg"); nothing # hide 
 ```
-![](example_incl.svg)
 
 So far these are just first-order inclusion probabilities. More generally, you can obtain higher-order probabilities (ie prob that items i,j,k,... are in the set *jointly*) from the marginal kernel of the DPP, given by "marginal_kernel"
 
@@ -186,25 +183,25 @@ In D²-sampling [vassilvitskii2006k](@cite), which is a relaxed stochastic versi
 ```@example ex1
 x = rand(2,1000);
 ind = distance_sampling(ColVecs(x),40,:farthest)
-scatter(x[1,:],x[2,:],marker_z = map((v) -> v ∈ ind, 1:size(x,2)),legend=:none,title="Farthest-point sample")
+scatter(x[1,ind],x[2,ind],title="Farthest-point sample")
 ```
 
 ```@example ex1
 ind = distance_sampling(ColVecs(x),40,:d2)
-scatter(x[1,:],x[2,:],marker_z = map((v) -> v ∈ ind, 1:size(x,2)),legend=:none,title="D² sample")
+scatter(x[1,ind],x[2,ind],title="D² sample")
 ```
 
-You can obtain other methods by changing how the prob. of selection depends on the distance. For instance, selecting points uniformly as long as they are more than distance $r$ away from the other points gives a so-called "hard sphere" sample. 
+You can obtain other methods by changing how the prob. of selection depends on the distance. For instance, selecting points uniformly as long as they are more than distance $r$ away from the other points gives a so-called "hard-sphere" sample. 
 ```@example ex1
-ind = distance_sampling(ColVecs(x),40,(v)-> v >.5) #may get fewer than 40 points
-scatter(x[1,:],x[2,:],marker_z = map((v) -> v ∈ ind, 1:size(x,2)),legend=:none,title="Hard-sphere sample")
+ind = distance_sampling(ColVecs(x),40,(v)-> v > .1) #may get fewer than 40 points
+scatter(x[1,ind],x[2,ind],title="Hard-sphere sample")
 ```
 
 Distance-based sampling is quite general, all it needs is a (pseudo-)distance matrix. 
 ```@example ex1
 D = [sum(abs.(a-b)) for a in eachcol(x), b in eachcol(x)] #L1 distance
-ind = distance_sampling(D,40,(v)-> v >.5) #may get fewer than 40 points
-scatter(x[1,:],x[2,:],marker_z = map((v) -> v ∈ ind, 1:size(x,2)),legend=:none,title="Hard-sphere sample in L1 distance")
+ind = distance_sampling(D,40,(v)-> v > .1) #may get fewer than 40 points
+scatter(x[1,ind],x[2,ind],title="Hard-sphere sample in L1 dist")
 ```
 
 For datasets that are large, it may not be wise (or even possible) to pre-compute and hold a full distance matrix in memory. You can use the LazyDist type, which behaves like a standard matrix, but whose entries are computed on-the-fly and not stored:
@@ -214,6 +211,30 @@ D[3,1] #not pre-computed!
 ind = distance_sampling(D,40,(v)-> v >.5);
 ```
 
+# Extended L-ensembles
+
+Extended L-ensembles are representations of DPPs that extend L-ensembles, introduced in [tremblay2021extended](@cite). They are defined by a pair of matrices $\bL$ and $\bV$, such that 
+```math
+p(\X=X) \propto \det \begin{pmatrix} 
+\bL_{X} &  \bV_{X,:} \\
+ \bV_{X,:}^t & \mathbf{0} 
+\end{pmatrix}
+```
+
+$\bV$ should be thought of as defining "mandatory" features of the DPP, while $\bL$ can be interpreted more or less as a regular kernel, see  [tremblay2021extended](@cite).
+
+
+DPP.jl provides some basic support for defining extended L-ensembles. The following is the "default" DPP described in  [tremblay2021extended](@cite), at order 3. 
+```{julia}
+x = randn(2,1000)
+L = [norm(a-b).^3 for a in eachcol(x), b in eachcol(x)] 
+V = polyfeatures(ColVecs(x),1)
+ele = ExtEnsemble(L,V)
+rescale!(ele,50)
+ind = sample(ele)
+Plots.scatter(x[1,:],x[2,:],color=:gray,alpha=.5) # hide 
+Plots.scatter!(x[1,ind],x[2,ind],color=:red,alpha=1,legend=:none) # hide 
+```
 
 
 ## Functions and types

@@ -1,7 +1,8 @@
 #Some code for partial projection ensembles, of mostly theoretical interest for
 #now. 
 
-mutable struct ExtEnsemble <: AbstractLEnsemble
+
+mutable struct PPEnsemble <: AbstractLEnsemble
     Lopt :: AbstractLEnsemble
     Lproj :: ProjectionEnsemble
     M :: Matrix
@@ -9,22 +10,22 @@ mutable struct ExtEnsemble <: AbstractLEnsemble
     α :: Float64
 end
 
-function ExtEnsemble(M :: Matrix, V :: Matrix)
+function PPEnsemble(M :: Matrix, V :: Matrix)
     @assert (size(M,1) == size(V,1))
     @assert (size(M,1) > size(V,2))
     Lproj = ProjectionEnsemble(V)
     #Orthogonalise (inefficient)
     Morth = (I-Lproj.U*Lproj.U')*(M*(I-Lproj.U*Lproj.U'))
     Lopt = FullRankEnsemble((Morth+Morth')/2)
-    ExtEnsemble(Lopt,Lproj,M,V,1.)
+    PPEnsemble(Lopt,Lproj,M,V,1.)
 end
 
-nitems(L::ExtEnsemble) = nitems(L.Lopt)
-maxrank(L::ExtEnsemble) = min(nitems(L),maxrank(L.Lopt) + maxrank(L.Lproj))
-min_items(L::ExtEnsemble) = maxrank(L.Lproj)
-logz(L::ExtEnsemble) = logz(L.Lopt)
-logz(L::ExtEnsemble,k) = (k > min_items(L) ? logz(L.Lopt,k-min_items(L)) : 0.0)
-function log_prob(L::ExtEnsemble,ind,k::Int)
+nitems(L::PPEnsemble) = nitems(L.Lopt)
+maxrank(L::PPEnsemble) = min(nitems(L),maxrank(L.Lopt) + maxrank(L.Lproj))
+min_items(L::PPEnsemble) = maxrank(L.Lproj)
+logz(L::PPEnsemble) = logz(L.Lopt)
+logz(L::PPEnsemble,k) = (k > min_items(L) ? logz(L.Lopt,k-min_items(L)) : 0.0)
+function log_prob(L::PPEnsemble,ind,k::Int)
     m = min_items(L)
     @assert (length(ind)==k)
     if (k < m || m > maxrank(L))
@@ -36,7 +37,7 @@ function log_prob(L::ExtEnsemble,ind,k::Int)
     end
 end
 
-function log_prob(L::ExtEnsemble,ind)
+function log_prob(L::PPEnsemble,ind)
     m = min_items(L)
     k=length(ind)
     if (k < m || k > maxrank(L))
@@ -49,20 +50,20 @@ function log_prob(L::ExtEnsemble,ind)
 end
 
 
-function show(io::IO, e::ExtEnsemble)
+function show(io::IO, e::PPEnsemble)
     println(io, "Partial projection DPP.")
     println(io,"Number of items in ground set : $(nitems(e)). Max. rank :
     $(maxrank(e))")
     println(io,"Rank of projective part : $(maxrank(e.Lproj))")
 end
 
-function rescale!(L::ExtEnsemble,k)
+function rescale!(L::PPEnsemble,k)
     @assert min_items(L) < k <= maxrank(L)
     L.α = rescale!(L.Lopt,k-min_items(L));
 end
 
 
-function sample(L::ExtEnsemble)
+function sample(L::PPEnsemble)
     r = maxrank(L.Lproj)
     λ = eigenvalues(L.Lopt)
     val = @.  λ / (1 + λ)
@@ -71,7 +72,7 @@ function sample(L::ExtEnsemble)
 end
 
 
-function sample(L::ExtEnsemble,k)
+function sample(L::PPEnsemble,k)
     @assert(k >= maxrank(L.Lproj))
     r = maxrank(L.Lproj)
     if (k>r)
@@ -82,7 +83,7 @@ function sample(L::ExtEnsemble,k)
     end
 end
 
-function inclusion_prob(L::ExtEnsemble,k)
+function inclusion_prob(L::PPEnsemble,k)
     λ = eigenvalues(L.Lopt)
     @assert k >= maxrank(L.Lproj)
     m = k-maxrank(L.Lproj)
@@ -97,6 +98,6 @@ function inclusion_prob(L::ExtEnsemble,k)
     end
 end
 
-function marginal_kernel(L::ExtEnsemble)
+function marginal_kernel(L::PPEnsemble)
     marginal_kernel(L.Lopt)+marginal_kernel(L.Lproj)
 end
