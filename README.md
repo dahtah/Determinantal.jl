@@ -30,16 +30,18 @@ See package documentation for more.
 
 This package is used in the following articles and pre-prints:
 
-Tremblay, N., Barthelmé, S., & Amblard, P. O. (2019). Determinantal Point Processes for Coresets. J. Mach. Learn. Res., 20, 168-1. [arxiv.org/abs/1803.08700](https://arxiv.org/abs/1803.08700)
-Tremblay, N., Barthelmé, S., Usevich, K., & Amblard, P. O. (2021). Extended L-ensembles: a new representation for Determinantal Point Processes. arXiv preprint [arxiv.org/abs/2107.06345](https://arxiv.org/abs/2107.06345).
-Barthelmé, S., Tremblay, N., Usevich, K., & Amblard, P. O. (2021). Determinantal Point Processes in the Flat Limit. [arxiv.org/abs/2107.07213](https://arxiv.org/abs/2107.07213).
-Tremblay, N., Barthelmé, S., & Amblard, P. O. (2018). Optimized algorithms to sample determinantal point processes. [arxiv.org/abs/1802.08471](https://arxiv.org/abs/1802.08471).
+- Tremblay, N., Barthelmé, S., & Amblard, P. O. (2019). Determinantal Point Processes for Coresets. J. Mach. Learn. Res., 20, 168-1. [arxiv.org/abs/1803.08700](https://arxiv.org/abs/1803.08700)
+- Tremblay, N., Barthelmé, S., Usevich, K., & Amblard, P. O. (2021). Extended L-ensembles: a new representation for Determinantal Point Processes. arXiv preprint [arxiv.org/abs/2107.06345](https://arxiv.org/abs/2107.06345).
+- Barthelmé, S., Tremblay, N., Usevich, K., & Amblard, P. O. (2021). Determinantal Point Processes in the Flat Limit. [arxiv.org/abs/2107.07213](https://arxiv.org/abs/2107.07213).
+- Tremblay, N., Barthelmé, S., & Amblard, P. O. (2018). Optimized algorithms to sample determinantal point processes. [arxiv.org/abs/1802.08471](https://arxiv.org/abs/1802.08471).
 
 ## Authors
 
 Simon Barthelmé & Nicolas Tremblay, Gipsa-lab, CNRS. 
 
 ## See also 
+
+Another Julia toolkit for DPPs by Maruan Al-Shedivat is available [here](https://github.com/alshedivat/DeterminantalPointProcesses.jl). 
 
 For a full-featured DPP toolkit in Python, see
 [DPPy](https://github.com/guilgautier/DPPy) by Guillaume Gautier.
