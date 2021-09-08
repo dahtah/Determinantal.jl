@@ -1,30 +1,31 @@
 abstract type AbstractLEnsemble end
 
+
 """
-   FullRankEnsemble{T}
+   EllEnsemble{T}
 
-This type represents an L-ensemble where the matrix L is full rank. This is the most general representation of an L-ensemble, but also the least efficient, both in terms of memory and computation.
+This type represents an L-ensemble, a (broad) special case of Determinantal Point Process. 
 
-At construction, an eigenvalue decomposition of L will be performed, at O(n^3) cost.
+The type parameter corresponds to the type of the entries in the matrix given as input (most likely, double precision floats).
 
-The type parameter corresponds to the type of the entries in the matrix given as input (most likely, double precision floats). 
+
 """
-mutable struct FullRankEnsemble{T} <: AbstractLEnsemble
-    L::Matrix{T}
+mutable struct EllEnsemble{T} <: AbstractLEnsemble
+    L::AbstractMatrix{T}
     U::Matrix{T}
     λ::Vector{T}
     n::Int64
     m::Int64
     α::T
 
-    function FullRankEnsemble{T}(V::Matrix{T}) where T
+    function EllEnsemble{T}(V::AbstractMatrix{T}) where T
         L = V
         @assert size(L,1) == size(L,2)
         eg = eigen(L)
         U = eg.vectors
         λ = max.(eg.values,eps(T))
         n = size(L,1);
-        new(L,U,λ,n,n,T(1.0))
+        new(L,U,λ,n,length(λ),T(1.0))
     end
     # function FullRankEnsemble{T}(X::AbstractVector{T},k :: Kernel) where T
     #     V = kernelmatrix(Val(:col),k,X)
@@ -33,40 +34,62 @@ mutable struct FullRankEnsemble{T} <: AbstractLEnsemble
 
 end
 
-
-
-
-@doc raw"""
-This type represents an L-ensemble where the matrix L is low rank. This enables faster computation. 
-
-The type parameter corresponds to the type of the entries in the matrix given as input (most likely, double precision floats)
 """
-mutable struct LowRankEnsemble{T} <: AbstractLEnsemble
-    M::Matrix{T}
-    U::Matrix{T}
-    λ::Vector{T}
-    n::Int64
-    m::Int64
-    α::T
+    EllEnsemble(L :: AbstractMatrix{T})
 
-    function LowRankEnsemble{T}(M::Matrix{T}) where T
-        @assert size(M,1) >= size(M,2)
-        n,m = size(M);
-        eg = eigen(M'*M)
-        U = M*eg.vectors
-        U = U ./ sqrt.(sum(U .^ 2,dims=1))
-        λ = eg.values
-        keep = (abs.(λ)  .> 10*eps(T)) .& (λ .> 0)
-        m_num = sum(keep)
-        if (m_num < m)
-            @warn "Numerical rank is lower than number of matrix columns"
-            U = U[:,keep]
-            λ = λ[keep]
-            m = m_num
-        end
-        new(M,U,λ,n,m,T(1.0))
-    end
+Construct an L-ensemble from a (symmetric, non-negative definite) matrix L.
+
+```@example
+    Z = randn(5,2)
+    EllEnsemble(Z*Z') #not very useful, presumably
+```
+
+Note that eigen(L) will be called at construction, which may be computationally costly.
+
+An L-Ensemble can also be constructed based on lazy matrix types, i.e. types that leverage a low-rank representation. In the example above we could also use the LowRank type:
+
+```@example
+    Z = randn(5,2)
+    EllEnsemble(LowRank(Z)) #more efficient than Z*Z'
+```
+
+"""
+function EllEnsemble(L :: AbstractMatrix{T}) where T
+    EllEnsemble{T}(L)
 end
+
+"""
+   EllEnsemble(X::Matrix{T},k :: Kernel)
+
+Construct a full-rank ensemble from a set of points and a kernel function.
+
+X is vector of column vectors (ColVecs) or a vector of row vectors (RowVecs)
+k is a kernel (see doc for package KernelFunctions.jl)
+
+Example: points in 2d along the circle, and an exponential kernel
+```
+t = LinRange(-pi,pi,10)'
+X = vcat(cos.(t),sin.(t))
+using KernelFunctions
+L=EllEnsemble(ColVecs(X),ExponentialKernel())
+```
+
+"""
+function EllEnsemble(X::AbstractVector,k :: Kernel)
+    V = kernelmatrix(k,X)
+    EllEnsemble(V)
+end
+
+function show(io::IO, e::EllEnsemble)
+    println(io, "L-Ensemble.")
+    println(io,"Number of items in ground set : $(nitems(e)). Max. rank : $(maxrank(e)). Rescaling constant α=$(round(e.α,digits=3))")
+end
+
+
+
+
+
+
 
 mutable struct ProjectionEnsemble{T} <: AbstractLEnsemble
     U::Matrix{T}
@@ -87,64 +110,19 @@ mutable struct ProjectionEnsemble{T} <: AbstractLEnsemble
     end
 end
 
-function show(io::IO, e::FullRankEnsemble)
-    println(io, "L-Ensemble with full-rank representation.")
-    println(io,"Number of items in ground set : $(nitems(e)). Rescaling constant α=$(round(e.α,digits=3))")
-end
-
-function show(io::IO, e::LowRankEnsemble)
-    println(io, "L-Ensemble with low-rank representation.")
-    println(io,"Number of items in ground set : $(nitems(e)). Max. rank : $(maxrank(e)). Rescaling constant α=$(round(e.α,digits=3))")
-end
 
 function show(io::IO, e::ProjectionEnsemble)
     println(io, "Projection DPP.")
     println(io,"Number of items in ground set : $(nitems(e)). Max. rank : $(maxrank(e)).")
 end
 
-"""
-   FullRankEnsemble(V::Matrix{T})
-
-Construct a full-rank ensemble from a matrix. Here the matrix must be square. 
-"""
-FullRankEnsemble(V::Matrix{T}) where T = FullRankEnsemble{T}(V)
 
 
 
 
 
-"""
-   FullRankEnsemble(X::Matrix{T},k :: Kernel)
 
-Construct a full-rank ensemble from a set of points and a kernel function.
 
-X is vector of column vectors (ColVecs) or a vector of row vectors (RowVecs)
-k is a kernel (see doc for package KernelFunctions.jl)
-
-Example: points in 2d along the circle, and an exponential kernel
-```
-t = LinRange(-pi,pi,10)'
-X = vcat(cos.(t),sin.(t))
-using KernelFunctions
-L=FullRankEnsemble(ColVecs(X),ExponentialKernel())
-```
-
-"""
-function FullRankEnsemble(X::AbstractVector,k :: Kernel)
-    V = kernelmatrix(k,X)
-    FullRankEnsemble(V)
-end
-
-@doc raw"""
-   LowRankEnsemble(V::Matrix{T})
-
-Construct a low-rank ensemble from a matrix of features. Here we assume 
-``\mathbf{L} = \mathbf{V}\mathbf{V}^t``, so that V must be n \times r, where n is the number of items and r is the rank of the L-ensemble.
-
-You will not be able to sample a number of items greater than the rank. At construction, an eigenvalue decomposition of V'*V will be perfomed, with cost nr^2. 
-
-"""
-LowRankEnsemble(V::Matrix{T}) where T = LowRankEnsemble{T}(V)
 
 @doc raw"""
    ProjectionEnsemble(V::Matrix{T},orth=true)
@@ -230,46 +208,20 @@ function cardinal(L::AbstractLEnsemble)
      (mean=sum(p),std=sqrt(sum(p.*(1 .- p))))
 end
 
-function diag(L::FullRankEnsemble)
+function diag(L::EllEnsemble)
     L.α*diag(L.L)
 end
 
-function diag(L::LowRankEnsemble)
-    vec(sum(L.M.^2,dims=2))
-end
 function diag(L::ProjectionEnsemble)
     vec(sum(L.U.^2,dims=2))
 end
 
 
-function getindex(L::FullRankEnsemble,I...)
+function getindex(L::EllEnsemble,I...)
     L.α*getindex(L.L,I...)
 end
 
-function getindex(L::LowRankEnsemble,i1,i2)
-    A=getindex(L.M,i1,:)
-    B=getindex(L.M,i2,:)
-    L.α*(A*B')
-end
 
-function getindex(L::LowRankEnsemble,i1,i2 :: Int)
-    A=getindex(L.M,i1,:)
-    B=getindex(L.M,i2,:)
-    L.α*(A*B)
-end
-
-function getindex(L::LowRankEnsemble,i1 :: Int,i2 :: Int)
-    A=getindex(L.M,i1,:)
-    B=getindex(L.M,i2,:)
-    L.α*dot(A,B)
-end
-
-
-function getindex(L::LowRankEnsemble,i1 :: Int,i2)
-    A=getindex(L.M,i1,:)
-    B=getindex(L.M,i2,:)
-    L.α*Matrix(A'*B')
-end
 
 function getindex(L::ProjectionEnsemble,i1,i2)
     A=getindex(L.U,i1,:)
@@ -333,15 +285,15 @@ function logz(L::ProjectionEnsemble)
 end
 
 
-for type in [:ProjectionEnsemble,:LowRankEnsemble,:FullRankEnsemble,:FullRankDPP]
+for type in [:ProjectionEnsemble,:EllEnsemble,:MarginalDPP]
     eval(:(nitems(L :: $type) = L.n))
 end
 
-for type in [:ProjectionEnsemble,:LowRankEnsemble,:FullRankEnsemble,:FullRankDPP]
+for type in [:ProjectionEnsemble,:EllEnsemble,:MarginalDPP]
     eval(:(maxrank(L :: $type) = L.m))
 end
 
-for type in [:ProjectionEnsemble,:LowRankEnsemble,:FullRankEnsemble]
+for type in [:ProjectionEnsemble,:EllEnsemble]
     eval(:(eigenvalues(L :: $type) = L.α*L.λ))
 end
 

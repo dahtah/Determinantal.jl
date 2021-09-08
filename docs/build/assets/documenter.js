@@ -57,6 +57,10 @@ MathJax.Hub.Config({
         "\\langle#1|",
         1
       ],
+      "bV": [
+        "\\mathbf{V}",
+        0
+      ],
       "bK": [
         "\\mathbf{K}",
         0

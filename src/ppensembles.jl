@@ -15,7 +15,7 @@ function ExtEnsemble(M :: Matrix, V :: Matrix)
     Lproj = ProjectionEnsemble(V)
     #Orthogonalise (inefficient)
     Morth = (I-Lproj.U*Lproj.U')*(M*(I-Lproj.U*Lproj.U'))
-    Lopt = FullRankEnsemble((Morth+Morth')/2)
+    Lopt = EllEnsemble((Morth+Morth')/2)
     ExtEnsemble(Lopt,Lproj,M,V,1.)
 end
 

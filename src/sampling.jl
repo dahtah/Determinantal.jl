@@ -105,7 +105,7 @@ function sample_pdpp(U :: AbstractMatrix,lvg :: AbstractVector)
         F[:,i] = f / sqrt(dot(v,f))
         #tmp = U*F[:,i]
         mul!(tmp,U,@view F[:,i])
-        ss = 0;
+        ss = 0.0;
         @turbo for j in 1:n
             s = p[j] - tmp[j]^2
             p[j] = (s > 0 ? s : 0)

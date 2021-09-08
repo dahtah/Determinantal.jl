@@ -1,13 +1,13 @@
 #defining a DPP using a marginal kernel
 
-mutable struct FullRankDPP{T} 
-    K::Matrix{T}
+mutable struct MarginalDPP{T} 
+    K::AbstractMatrix{T}
     U::Matrix{T}
     λ::Vector{T}
     n::Int64
     m::Int64
 
-    function FullRankDPP{T}(V::Matrix{T}) where T
+    function MarginalDPP{T}(V::Matrix{T}) where T
         K = V
         @assert size(K,1) == size(K,2) "Kernel must be square"
         eg = eigen(K)
@@ -15,38 +15,38 @@ mutable struct FullRankDPP{T}
         λ = max.(eg.values,eps(T))
         @assert maximum(λ) <= 1.0 "Eigenvalues need to be less than or equal to 1"
         n = size(K,1);
-        new(K,U,λ,n,n)
+        new(K,U,λ,n,length(λ))
     end
 
 end
 
 
-function show(io::IO, e::FullRankDPP)
-    println(io, "DPP with full-rank marginal kernel representation.")
+function show(io::IO, e::MarginalDPP)
+    println(io, "DPP with marginal kernel representation.")
     println(io,"Number of items in ground set : $(nitems(e)).")
 end
 
 """
-   FullRankDPP(V::Matrix{T})
+   MarginalDPP(V::Matrix{T})
 
-Construct a full-rank DPP from a matrix defining the marginal kernel. Here the matrix must be square and its eigenvalues must be between 0 and 1.
+Construct a DPP from a matrix defining the marginal kernel. Here the matrix must be square and its eigenvalues must be between 0 and 1.
 """
-FullRankDPP(V::Matrix{T}) where T = FullRankDPP{T}(V)
+MarginalDPP(V::Matrix{T}) where T = MarginalDPP{T}(V)
 
-function inclusion_prob(M::FullRankDPP)
+function inclusion_prob(M::MarginalDPP)
     diag(M.K)
 end
 
-function marginal_kernel(M::FullRankDPP)
+function marginal_kernel(M::MarginalDPP)
     M.K
 end
 
-function sample(M::FullRankDPP)
+function sample(M::MarginalDPP)
     incl = rand(M.m) .< M.λ
     sample_pdpp(M.U[:,incl])
 end
 
-function cardinal(M::FullRankDPP)
+function cardinal(M::MarginalDPP)
     p = M.λ
     (mean=sum(p),std=sqrt(sum(p.*(1 .- p))))
 end

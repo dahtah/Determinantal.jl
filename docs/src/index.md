@@ -36,14 +36,14 @@ Here is an example of defining a very simple DPP in DPP.jl, over a set of size 2
 using DPP
 #A 2x2 matrix, so here Ω={1,2}
 K = [3 1; 1 3]/4
-dpp = FullRankDPP(K)
+dpp = MarginalDPP(K)
 sample(dpp) #𝒳, a random subset
 #estimate prob. that item 1 is in 𝒳 
 sum([1 ∈ sample(dpp) for _ in 1:1000])/1000
 #should be approx. equal to K[1,1]
 ```
 
-There is one important constraint when defining DPPs based on the marginal kernel $\bK$; the eigenvalues of $\bK$ need to be in $[0,1]$. Because of this, and for reasons of interpretability, it is often more convenient to work with L-ensembles or extended L-ensembles. 
+The name "MarginalDPP" refers to the fact that the DPP is defined based on its marginal kernel. There is one important constraint when defining DPPs based on the marginal kernel $\bK$; the eigenvalues of $\bK$ need to be in $[0,1]$. Because of this, and for reasons of interpretability, it is often more convenient to work with L-ensembles or extended L-ensembles. 
 
 L-ensembles are a (large) subset of DPPs with the following property. We say $\X$ is a L-ensemble if there exists $\bL$ such that:
 ```math
@@ -57,7 +57,7 @@ x = randn(2,500) #some points in dim 2
 
 #compute a kernel matrix for the points in x 
 L = [ exp(-norm(a-b)^2) for a in eachcol(x), b in eachcol(x) ]
-dpp = FullRankEnsemble(L) #form an L-ensemble based on the 𝐋 matrix 
+dpp = EllEnsemble(L) #form an L-ensemble based on the 𝐋 matrix 
 rescale!(dpp,50) #scale so that the expected size is 50
 ind = sample(dpp) #a sample from the DPP (indices)
 
@@ -70,12 +70,12 @@ The line `rescale!(dpp,50)` sets the expected size of the L-ensemble to 50. One 
 
 ## Using other kernels 
 
-FullRankEnsemble requires a SPD matrix as input. For more exotic kernels than the Gaussian, you can either do things by hand or use [KernelFunctions.jl](https://github.com/JuliaGaussianProcesses/KernelFunctions.jl/), which DPP.jl supports. 
+EllEnsemble requires a SPD matrix as input. For more exotic kernels than the Gaussian, you can either do things by hand or use [KernelFunctions.jl](https://github.com/JuliaGaussianProcesses/KernelFunctions.jl/), which DPP.jl supports. 
 
 ```@example ex1
 using KernelFunctions
 x = randn(2,100)
-L = FullRankEnsemble(ColVecs(x),ExponentialKernel()) 
+L = EllEnsemble(ColVecs(x),ExponentialKernel()) 
 ```
 Here we need to specify whether the $2\times 100$ matrix  'x' should be considered to represent 100 points in dimension 2, or 2 points in dimension 100. ColVecs specifies the former, RowVecs the latter. This mechanism is borrowed from KernelFunctions and used in other places as well. 
 
@@ -83,30 +83,54 @@ See the documentation of [KernelFunctions.jl](https://juliagaussianprocesses.git
 
 ## Using low-rank matrices for speed
 
-L-ensembles defined via 'FullRankEnsemble' are the most general kind but not very efficient. They require an eigendecomposition of the $\bL$ matrix, which comes at cost $\O(n^3)$. For practical applications in large $n$ it is preferable to use a low-rank ensemble, i.e. one such that $\bL = \bM \bM^t$ with $\bM$ a $n$ times $m$ matrix with $m \ll n$.
+L-ensembles defined using a full-rank matrix are expensive in large $n$, because they require an eigendecomposition of the $\bL$ matrix (at cost $\O(n^3)$). For practical applications in large $n$ it is preferable to use a low-rank ensemble, i.e. one such that $\bL = \bM \bM^t$ with $\bM$ a $n$ times $m$ matrix with $m \ll n$.
 
-The function rff computes a low-rank approximation (Random Fourier Features, [rahimi2007random](@cite)) to a Gaussian kernel matrix:
+DPP.jl provides a type called "LowRank" that represents a symmetric low-rank matrix efficiently:
+```@example ex1
+Z = randn(5,2)
+K = Z*Z' #a rank 2 matrix of size 5x5
+K_lr = LowRank(Z)
+all(K .≈ K_lr)
+```
+
+It provides a specialised implementation of eigen that only returns the non-null eigenvalues. Here is an example:
+```@example ex1
+eigen(K_lr).values
+```
+Because K has rank 2, there are only two eigenvalues. 
+
+The constructor for EllEnsemble accepts matrices of LowRank type as arguments:
+```@example ex1
+EllEnsemble(K_lr)
+```
+
+The advantage of using LowRank is that the cost of forming the L-ensemble drops from $\O(n^3)$ to $\O(nm^2)$, where $m$ is the rank. Note that the maximum size of the DPP cannot exceed $m$ in this case. 
+
+
+
+The rff functions computes a low-rank approximation to a Gaussian kernel matrix using Random Fourier Features, [rahimi2007random](@cite)
 ```@example ex1
 x = randn(2,1000) #some points in dim 2
-M = rff(x,150,.5) #second argument determines rank, third is standard deviation of Gaussian kernel
-lr=LowRankEnsemble(M)
-rescale!(lr,50)
-ind = sample(lr) #a sample from the DPP (indices)
-
-scatter(x[1,:],x[2,:],marker_z = map((v) -> v ∈ ind, 1:size(x,2)),legend=:none,alpha=.75) #show the selected points in white
+L_rff = rff(ColVecs(x),150,.5) #second argument determines rank, third is standard deviation of Gaussian kernel
+L_exact = gaussker(ColVecs(x),.5)
+lr=EllEnsemble(L_rff)
+lex = EllEnsemble(L_exact)
+plot(sort(lex.λ,rev=true)); plot!(sort(lr.λ,rev=true),legend=:none) # hide
 ```
+
+The plot shows the approximation of the spectrum of the kernel matrix by the low-rank approximation.
+
 Using low-rank representations DPP.jl can scale up to millions of points. Keep in mind that DPPs have good scaling in the size of $\Omega$ (n) but poor scaling in the rank ($m$, number of columns of $\bM$). The overall cost scales as $\O(nm^2)$, so $m$ should be kept in the hundreds at most. 
 
 As an alternative to Random Fourier Features, we also provide an implementation of the Nyström approximation [williams2001using](@cite). The function again returns a matrix $\bM$ such that $\bL \approx \bM \bM^t$, but the approximation is formed using a subset of points. 
 ```@example ex1
 x = randn(3,1000)
 M_n =  nystrom_approx(ColVecs(x),SqExponentialKernel(),50) #use 50 points
-L = FullRankEnsemble(ColVecs(x),SqExponentialKernel())
-L_n = LowRankEnsemble(M_n)
+L = EllEnsemble(ColVecs(x),SqExponentialKernel())
+L_n = EllEnsemble(M_n)
 
-#Show the low-rank approximation to the spectrum
-plot(sort(L.λ,rev=:true))
-plot!(sort(L_n.λ,rev=:true),legend=:false)
+plot(sort(L.λ,rev=:true)) # hide
+plot!(sort(L_n.λ,rev=:true),legend=:false) # hide 
 ```
 
 Not all subsets give good Nyström approximations. You can indicate a specific subset to use:
@@ -123,7 +147,7 @@ x = randn(3,1000)
 feat = (xi,xj,a) -> @. exp(-a*xi*xj)*cos(xi+xj)
 ftrs = [ feat(vec(x[i,:]),vec(x[j,:]),a) for i in 1:3, j in 1:3, a in [0,1,2] if i >= j ]
 M = reduce(hcat,ftrs)
-ll = LowRankEnsemble(M)
+ll = EllEnsemble(LowRank(M))
 rescale!(ll,14)
 sample(ll)
 nothing; # hide
@@ -132,7 +156,7 @@ nothing; # hide
 A sensible set of features to use are multivariate polynomial features, here used to set up a ProjectionEnsemble (a special case of a low-rank DPP that has fixed sample size, equal to rank of $\bM$)
 ```@example ex1
 x = randn(2,1000)
-Lp = polyfeatures(x,10) |> ProjectionEnsemble
+Lp = polyfeatures(ColVecs(x),10) |> ProjectionEnsemble
 ind = sample(Lp) 
 Plots.scatter(x[1,:],x[2,:],color=:gray,alpha=.5) # hide 
 Plots.scatter!(x[1,ind],x[2,ind],color=:red,alpha=1) # hide 
@@ -158,7 +182,7 @@ In the next example we compute the empirical inclusion probability of a set of i
 ```@example ex1
 using Statistics
 x = randn(2,10)
-L = DPP.gaussker(ColVecs(x),.5) |> FullRankEnsemble
+L = DPP.gaussker(ColVecs(x),.5) |> EllEnsemble
 rescale!(L,4)
 set = [3,5]
 
@@ -225,7 +249,7 @@ $\bV$ should be thought of as defining "mandatory" features of the DPP, while $\
 
 
 DPP.jl provides some basic support for defining extended L-ensembles. The following is the "default" DPP described in  [tremblay2021extended](@cite), at order 3. 
-```{julia}
+```@example ex1
 x = randn(2,1000)
 L = [norm(a-b).^3 for a in eachcol(x), b in eachcol(x)] 
 V = polyfeatures(ColVecs(x),1)

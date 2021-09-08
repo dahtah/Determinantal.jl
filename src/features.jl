@@ -64,13 +64,13 @@ M has 2*m columns. The higher m, the better the approximation.
 
 ## Examples
 
-```
-X = randn(2,10) #10 points in dim 2
-rff(X,4,1.0)
+```@example
+x = randn(2,10) #10 points in dim 2
+rff(ColVecs(x),4,1.0)
 ```
 See also: gaussker, kernelmatrix 
 """
-function rff(X :: Matrix, m, σ)
+function rff(X :: AbstractMatrix, m, σ) #assume x is d × n 
     d = size(X,1)
     n = size(X,2)
     Ω = randn(d,m) / sqrt(σ^2)
@@ -78,8 +78,20 @@ function rff(X :: Matrix, m, σ)
     s = sqrt(m)
     f = (x) -> cos(x)/s
     g = (x) -> sin(x)/s
-    [f.(T) g.(T)]
+    [f.(T) g.(T)] |> LowRank
 end
+
+
+function rff(x :: ColVecs,m,σ)
+    rff(x.X,m,σ)
+end
+
+function rff(x :: RowVecs,m,σ)
+    rff(x.X',m,σ)
+end
+
+
+
 
 """
     nystrom_approx(x :: AbstractVector,ker :: Kernel,ind)
@@ -101,7 +113,7 @@ function nystrom_approx(x :: AbstractVector,ker :: Kernel,ind)
     K_a = kernelmatrix(ker,x,x[ind])
     U = cholesky(K_a[ind,:]).L
     #K[:,ind] * inv(U')
-    K_a / U'
+    LowRank(K_a / U')
 end
 
 function nystrom_approx(x :: AbstractVector,ker :: Kernel, m :: Integer)
@@ -115,7 +127,7 @@ function nystrom_approx(K :: Matrix,ind)
     Kaa = K[ind,ind]
     U = cholesky(Kaa).L
     #K[:,ind] * inv(U')
-    K[:,ind] / U'
+    LowRank(K[:,ind] / U')
 end
 
 function nystrom_approx(K,m :: Integer)
@@ -125,7 +137,7 @@ end
 
 
 
-function rff(X :: Matrix, m)
+function rff(X , m)
     rff(X,m,estmediandist(X))
 end
 
