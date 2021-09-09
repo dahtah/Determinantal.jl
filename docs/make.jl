@@ -2,7 +2,7 @@ push!(LOAD_PATH,"../src/")
 using Documenter, DPP
 using DocumenterCitations
 
-bib = CitationBibliography("biblio.bib")
+bib = CitationBibliography("docs/biblio.bib")
 makedocs(bib,sitename="DPP.jl",
          format = Documenter.HTML(
                                       mathengine = MathJax(Dict(
