@@ -23,3 +23,8 @@ makedocs(bib,sitename="DPP.jl",
                                           )
     ),
 )))
+
+
+deploydocs(
+    repo = "github.com/dahtah/DPP.jl.git",
+)
