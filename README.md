@@ -1,7 +1,5 @@
 # DPP.jl: Determinantal Point Processes in Julia
 
-NB : repository has moved to github [https://github.com/dahtah/DPP.jl](https://github.com/dahtah/DPP.jl). 
-
 Determinantal Point Processes are point processes with repulsion properties: define an appropriate function for representing similarity between items, and a DPP will sample a subset of "representative" items, i.e. ones that does not contain two items that are too similar.
 
 This package focuses on discrete DPPs. Continuous DPPs are not supported (yet). Discrete DPPs may be defined from (extended) L-ensembles, or marginal kernels. We provide a very fast implementation of the exact sampling algorithm described in Tremblay et al. (2018). We also provide some basic tools for low-rank kernel approximation.
