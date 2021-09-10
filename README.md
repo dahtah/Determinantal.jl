@@ -1,3 +1,5 @@
+[![Documentation (latest)](https://img.shields.io/badge/docs-dev-blue.svg)](https://dahtah.github.io/DPP.jl/dev)
+
 # DPP.jl: Determinantal Point Processes in Julia
 
 Determinantal Point Processes are point processes with repulsion properties: define an appropriate function for representing similarity between items, and a DPP will sample a subset of "representative" items, i.e. ones that does not contain two items that are too similar.

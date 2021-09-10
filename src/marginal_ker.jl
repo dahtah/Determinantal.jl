@@ -7,7 +7,7 @@ mutable struct MarginalDPP{T}
     n::Int64
     m::Int64
 
-    function MarginalDPP{T}(V::Matrix{T}) where T
+    function MarginalDPP{T}(V::AbstractMatrix{T}) where T
         K = V
         @assert size(K,1) == size(K,2) "Kernel must be square"
         eg = eigen(K)
@@ -31,7 +31,7 @@ end
 
 Construct a DPP from a matrix defining the marginal kernel. Here the matrix must be square and its eigenvalues must be between 0 and 1.
 """
-MarginalDPP(V::Matrix{T}) where T = MarginalDPP{T}(V)
+MarginalDPP(V::AbstractMatrix{T}) where T = MarginalDPP{T}(V)
 
 function inclusion_prob(M::MarginalDPP)
     diag(M.K)
