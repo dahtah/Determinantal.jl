@@ -30,7 +30,7 @@ using LoopVectorization
 # end
 
 
-# function sample_pdppc(U) 
+# function sample_pdppc(U)
 #     n = size(U,1)
 #     m = size(U,2)
 #     #Initial distribution
@@ -62,51 +62,51 @@ using LoopVectorization
 #     collect(inds)
 # end
 
-function wsample(w :: AbstractVector,ttl)
-    u = rand()*ttl
+function wsample(w::AbstractVector, ttl)
+    u = rand() * ttl
     i = 0
     s = 0
     while s < u
-        i+=1
-        s+=w[i]
+        i += 1
+        s += w[i]
     end
     i
 end
 
-function sample_pdpp(U  :: AbstractMatrix)
-    sample_pdpp(U,vec(sum(U.^2,dims=2)))
+function sample_pdpp(U::AbstractMatrix)
+    sample_pdpp(U, vec(sum(U .^ 2, dims = 2)))
 end
 
-function sample_pdpp(U :: AbstractMatrix,lvg :: AbstractVector) 
-    n = size(U,1)
-    m = size(U,2)
+function sample_pdpp(U::AbstractMatrix, lvg::AbstractVector)
+    n = size(U, 1)
+    m = size(U, 2)
     #Initial distribution
     #Um = Matrix(U)
     p = lvg
-    F = zeros(Float64,m,m)
+    F = zeros(Float64, m, m)
     f = zeros(m)
     v = zeros(m)
     tmp = zeros(n)
     inds = BitSet()
     ss = sum(lvg)
     @inbounds for i = 1:m
-        itm = wsample(p,ss)
-        push!(inds,itm)
+        itm = wsample(p, ss)
+        push!(inds, itm)
         #v = vec(Matrix(U[itm,:]))
         #v = @view U[itm,:]
         #v = U[itm,:]
-        copyto!(v,U[itm,:])
-        if i==1
-            copyto!(f,v)
+        copyto!(v, U[itm, :])
+        if i == 1
+            copyto!(f, v)
         else
-            Fv = @view F[:,1:(i-1)]
-            copyto!(f,v - Fv*(Fv'*v))
+            Fv = @view F[:, 1:(i-1)]
+            copyto!(f, v - Fv * (Fv' * v))
         end
-        F[:,i] = f / sqrt(dot(v,f))
+        F[:, i] = f / sqrt(dot(v, f))
         #tmp = U*F[:,i]
-        mul!(tmp,U,@view F[:,i])
-        ss = 0.0;
-        @turbo for j in 1:n
+        mul!(tmp, U, @view F[:, i])
+        ss = 0.0
+        @turbo for j = 1:n
             s = p[j] - tmp[j]^2
             p[j] = (s > 0 ? s : 0)
             ss += p[j]
@@ -118,4 +118,3 @@ function sample_pdpp(U :: AbstractMatrix,lvg :: AbstractVector)
     end
     collect(inds)
 end
-

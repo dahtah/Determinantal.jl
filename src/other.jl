@@ -1,6 +1,6 @@
 struct LazyDist <: AbstractMatrix{Float64}
-    x :: Vector
-    dfun :: Function
+    x::Vector
+    dfun::Function
 end
 
 """
@@ -19,31 +19,31 @@ D[3,2]
 
 """
 function LazyDist(x)
-    LazyDist(x,(x,y)->norm(x-y))
+    LazyDist(x, (x, y) -> norm(x - y))
 end
 
-function Base.getindex(D :: LazyDist,i,j)
-    D.dfun(D.x[i],D.x[j])
+function Base.getindex(D::LazyDist, i, j)
+    D.dfun(D.x[i], D.x[j])
 end
 
-function Base.getindex(D :: LazyDist,i,j :: Colon)
+function Base.getindex(D::LazyDist, i, j::Colon)
     xi = D.x[i]
-    Matrix([D.dfun(xi,xj) for xj in D.x]')
+    Matrix([D.dfun(xi, xj) for xj in D.x]')
 end
 
-function Base.getindex(D :: LazyDist,i  :: Colon,j)
+function Base.getindex(D::LazyDist, i::Colon, j)
     xj = D.x[j]
-    [D.dfun(xi,xj) for xi in D.x]
+    [D.dfun(xi, xj) for xi in D.x]
 end
 
-function Base.getindex(D :: LazyDist,i :: Colon,j :: Colon)
-    [D.dfun(xi,xj) for xi in D.x,xj in D.x]
+function Base.getindex(D::LazyDist, i::Colon, j::Colon)
+    [D.dfun(xi, xj) for xi in D.x, xj in D.x]
 end
 
 
 
-function Base.size(D :: LazyDist)
-    (length(D.x),length(D.x))
+function Base.size(D::LazyDist)
+    (length(D.x), length(D.x))
 end
 
 
@@ -59,26 +59,26 @@ end
     scatter(x[1,:],x[2,:],marker_z = map((v) -> v ∈ ind, 1:size(x,2)),legend=:none)
    ```
 """
-function distance_sampling(x :: AbstractVector,m,sampling=:d2)
-    distance_sampling(LazyDist(x),m,sampling)
+function distance_sampling(x::AbstractVector, m, sampling = :d2)
+    distance_sampling(LazyDist(x), m, sampling)
 end
 
-function distance_sampling(D :: AbstractMatrix,m,sampling :: Union{Symbol,Function})
-    @assert size(D,1) == size(D,2)
-    if (isa(sampling,Symbol))
-        @assert sampling ∈ [:d2,:farthest]
+function distance_sampling(D::AbstractMatrix, m, sampling::Union{Symbol,Function})
+    @assert size(D, 1) == size(D, 2)
+    if (isa(sampling, Symbol))
+        @assert sampling ∈ [:d2, :farthest]
     end
-    n = size(D,1)
+    n = size(D, 1)
     ind = BitSet()
     i = rand(1:n)
-    push!(ind,i)
-    dd = D[:,i]
+    push!(ind, i)
+    dd = D[:, i]
     while (length(ind) < m)
         if (sampling == :d2)
-            i = StatsBase.sample(Weights(dd.^2))
+            i = StatsBase.sample(Weights(dd .^ 2))
         elseif (sampling == :farthest)
             i = argmax(dd)
-        elseif (isa(sampling,Function))
+        elseif (isa(sampling, Function))
             w = sampling.(dd)
             if (all(w .== 0))
                 return collect(ind)
@@ -86,25 +86,23 @@ function distance_sampling(D :: AbstractMatrix,m,sampling :: Union{Symbol,Functi
                 i = StatsBase.sample(Weights(w))
             end
         end
-        push!(ind,i)
+        push!(ind, i)
         dd[i] = 0
-        dd = min.(dd,D[:,i])
+        dd = min.(dd, D[:, i])
     end
     collect(ind)
 end
 
 
-function bernoulli_process(p,nrep=1)
-    if (nrep>1)
-        [ findall(rand(length(p)) .<= p) for _ in 1:nrep]
+function bernoulli_process(p, nrep = 1)
+    if (nrep > 1)
+        [findall(rand(length(p)) .<= p) for _ = 1:nrep]
     else
         findall(rand(length(p)) .<= p)
     end
 end
 
-function matched_poisson(L :: AbstractLEnsemble,nrep)
+function matched_poisson(L::AbstractLEnsemble, nrep)
     p = inclusion_prob(L)
     bernoulli_process(p)
 end
-
-
