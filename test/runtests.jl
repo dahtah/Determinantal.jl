@@ -4,9 +4,7 @@ using Test
 using LinearAlgebra
 
 const testdir = dirname(@__FILE__)
-tests = [
-    "solve_sp","sample_dpp","incl_prob","density"
-]
+tests = ["solve_sp", "sample_dpp", "incl_prob", "density"]
 
 @testset "DPP" begin
     for t in tests

@@ -6,7 +6,6 @@ Determinantal Point Processes are point processes with repulsion properties: def
 
 This package focuses on discrete DPPs. Continuous DPPs are not supported (yet). Discrete DPPs may be defined from (extended) L-ensembles, or marginal kernels. We provide a very fast implementation of the exact sampling algorithm described in Tremblay et al. (2018). We also provide some basic tools for low-rank kernel approximation.
 
-
 ## Quick start
 
 ```{julia}
@@ -14,9 +13,9 @@ using DPP
 
 x = randn(2,500) #some points in dim 2
 
-#compute a kernel matrix for the points in x 
+#compute a kernel matrix for the points in x
 L = [ exp(-norm(a-b)^2) for a in eachcol(x), b in eachcol(x) ]
-dpp = EllEnsemble(L) #form a L-ensemble based on the L matrix 
+dpp = EllEnsemble(L) #form a L-ensemble based on the L matrix
 rescale!(dpp,50) #scale so that the expected size is 50
 ind = sample(dpp) #a sample from the DPP (indices)
 
@@ -26,7 +25,7 @@ scatter(x[1,:],x[2,:],marker_z = map((v) -> v ∈ ind, 1:size(x,2)),legend=:none
 
 ![Demo of DPP sampling](demo.png)
 
-See package documentation for more. 
+See package documentation for more.
 
 ## References
 
@@ -39,11 +38,11 @@ This package is used in the following articles and pre-prints:
 
 ## Authors
 
-Simon Barthelmé & Nicolas Tremblay, Gipsa-lab, CNRS. 
+Simon Barthelmé & Nicolas Tremblay, Gipsa-lab, CNRS.
 
-## See also 
+## See also
 
-Another Julia toolkit for DPPs by Maruan Al-Shedivat is available [here](https://github.com/alshedivat/DeterminantalPointProcesses.jl). 
+Another Julia toolkit for DPPs by Maruan Al-Shedivat is available [here](https://github.com/alshedivat/DeterminantalPointProcesses.jl).
 
 For a full-featured DPP toolkit in Python, see
 [DPPy](https://github.com/guilgautier/DPPy) by Guillaume Gautier.
