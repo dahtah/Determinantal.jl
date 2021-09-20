@@ -38,7 +38,7 @@ This package is used in the following articles and pre-prints:
 
 ## Authors
 
-Simon Barthelmé & Nicolas Tremblay, Gipsa-lab, CNRS.
+Simon Barthelmé (Gipsa-lab, CNRS), Nicolas Tremblay (Gipsa-lab, CNRS), Guillaume Gautier (CRIStAL). 
 
 ## See also
 
