@@ -2,29 +2,29 @@
 #Equivalent to finding a rescaling  α s.t. Tr(αL(αL + I)^-1) = k
 
 #solve the saddlepoint equation using a fixed-point iteration
-function solve_sp_fp(ls::Vector, k; nu0 = 0.0, tol = 0.001, maxit = 100)
+function solve_sp_fp(ls::Vector, k; nu0=0.0, tol=0.001, maxit=100)
     (k >= length(ls)) && throw(
         ArgumentError(
             "Error: k larger or equal to total number of eigenvalues: cannot find an appropriate rescaling",
         ),
     )
     g = exp(nu0)
-    for i = 1:maxit
+    for i in 1:maxit
         fv = sum(ls ./ (1 .+ g .* ls))
         nv = k / fv
         ((abs(k - g * fv) / k) < tol) && return nv
         g = nv
     end
-    g
+    return g
 end
 
 #find initial value for ν=log α
 function guess_nu(ls::Vector, k)
-    -StatsBase.quantile(log.(ls), 1 - k / length(ls))
+    return -StatsBase.quantile(log.(ls), 1 - k / length(ls))
 end
 
 #solve the saddlepoint eq. using Newton's method
-function solve_sp(ls::AbstractVector, k; nu0 = nothing, tol = 0.001, maxit = 100)
+function solve_sp(ls::AbstractVector, k; nu0=nothing, tol=0.001, maxit=100)
     (k >= length(ls)) && throw(
         ArgumentError(
             "Error: k larger or equal to total number of eigenvalues: cannot find an appropriate rescaling",

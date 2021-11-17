@@ -1,0 +1,5 @@
+# Configuration file for JuliaFormatter.jl
+# https://domluna.github.io/JuliaFormatter.jl/stable/
+
+style = "blue"
+format_docstrings = true

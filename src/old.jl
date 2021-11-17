@@ -16,7 +16,7 @@ mutable struct LowRankEnsemble{T} <: AbstractLEnsemble
         n, m = size(M)
         eg = eigen(M' * M)
         U = M * eg.vectors
-        U = U ./ sqrt.(sum(U .^ 2, dims = 1))
+        U = U ./ sqrt.(sum(U .^ 2; dims=1))
         λ = eg.values
         keep = (abs.(λ) .> 10 * eps(T)) .& (λ .> 0)
         m_num = sum(keep)
@@ -26,7 +26,7 @@ mutable struct LowRankEnsemble{T} <: AbstractLEnsemble
             λ = λ[keep]
             m = m_num
         end
-        new(M, U, λ, n, m, T(1.0))
+        return new(M, U, λ, n, m, T(1.0))
     end
 end
 
@@ -43,35 +43,34 @@ LowRankEnsemble(V::Matrix{T}) where {T} = LowRankEnsemble{T}(V)
 
 function show(io::IO, e::LowRankEnsemble)
     println(io, "L-Ensemble with low-rank representation.")
-    println(
+    return println(
         io,
         "Number of items in ground set : $(nitems(e)). Max. rank : $(maxrank(e)). Rescaling constant α=$(round(e.α,digits=3))",
     )
 end
 
 function diag(L::LowRankEnsemble)
-    vec(sum(L.M .^ 2, dims = 2))
+    return vec(sum(L.M .^ 2; dims=2))
 end
 function getindex(L::LowRankEnsemble, i1, i2)
     A = getindex(L.M, i1, :)
     B = getindex(L.M, i2, :)
-    L.α * (A * B')
+    return L.α * (A * B')
 end
 function getindex(L::LowRankEnsemble, i1, i2::Int)
     A = getindex(L.M, i1, :)
     B = getindex(L.M, i2, :)
-    L.α * (A * B)
+    return L.α * (A * B)
 end
 
 function getindex(L::LowRankEnsemble, i1::Int, i2::Int)
     A = getindex(L.M, i1, :)
     B = getindex(L.M, i2, :)
-    L.α * dot(A, B)
+    return L.α * dot(A, B)
 end
-
 
 function getindex(L::LowRankEnsemble, i1::Int, i2)
     A = getindex(L.M, i1, :)
     B = getindex(L.M, i2, :)
-    L.α * Matrix(A' * B')
+    return L.α * Matrix(A' * B')
 end

@@ -6,20 +6,18 @@ First-order inclusion probabilities in a k-DPP with L-ensemble L. Uses a (typica
 """
 function inclusion_prob(L::AbstractLEnsemble, k)
     val = inclusion_prob_diag(L.λ, k)
-    val[val.<0] .= 0
-    val[val.>1] .= 1
+    val[val .< 0] .= 0
+    val[val .> 1] .= 1
     val = (val ./ sum(val)) .* k
-    return sum((L.U * Diagonal(sqrt.(val))) .^ 2, dims = 2)
+    return sum((L.U * Diagonal(sqrt.(val))) .^ 2; dims=2)
 end
-
 
 function inclusion_prob_diag(λ, k)
     α = solve_sp(λ, k)
     h = (1 .+ α * λ)
-    r = [sum(λ .* (h .^ -i)) for i = 1:3]
+    r = [sum(λ .* (h .^ -i)) for i in 1:3]
     @. (λ / h) * (r[3] / (h * r[2]^2) - 1 / (r[2] * h^2) + α)
 end
-
 
 """
     sample(L::AbstractLEnsemble,k)
@@ -30,33 +28,31 @@ The algorithm uses a saddle-point approximation adapted from Barthelmé, Amblard
 """
 function sample(L::AbstractLEnsemble, k)
     incl = sample_diag_kdpp(L, k)
-    sample_pdpp(L.U[:, collect(incl)])
+    return sample_pdpp(L.U[:, collect(incl)])
 end
-
-
 
 function sample_diag_kdpp(L::AbstractLEnsemble, k)
     set = BitSet()
     (k == 0) && return set
-    (k == L.m) && return 1:L.m
+    (k == L.m) && return 1:(L.m)
     s = 0
     α = solve_sp(L.λ, k)
 
     λ = L.λ
     lp = zeros(length(λ))
     lt = zeros(length(λ))
-    for t = 1:L.m
+    for t in 1:(L.m)
         if (k - s == L.m - t + 1) #prob accepting next == 1
             p = 1
         else
             λ_sub = @view λ[t:end]
-            α = solve_sp(λ_sub, k - s; nu0 = log(α))
+            α = solve_sp(λ_sub, k - s; nu0=log(α))
             #compute cond. inclusion probability
             r = zeros(3)
-            for i = t:L.m
+            for i in t:(L.m)
                 lp[i] = (1 .+ α * λ[i])
                 lt[i] = λ[i]
-                for j = 1:3
+                for j in 1:3
                     lt[i] /= lp[i]
                     r[j] += lt[i]
                 end
@@ -72,7 +68,9 @@ function sample_diag_kdpp(L::AbstractLEnsemble, k)
         end
         (length(set) == k) && return set
     end
-    throw(ErrorException("Algorithm failed, did not reach the required number of samples"))
+    return throw(
+        ErrorException("Algorithm failed, did not reach the required number of samples")
+    )
 end
 
 @doc raw"""
@@ -90,11 +88,11 @@ for n large. If approx=true, a stable saddle-point approximation (as in
 Barthelmé et al. (2019)) is used instead for all eₖ with k>5.
 
 """
-function esp(L::AbstractLEnsemble, approx = false)
-    esp(L.λ, length(L.λ), approx)
+function esp(L::AbstractLEnsemble, approx=false)
+    return esp(L.λ, length(L.λ), approx)
 end
 
-function esp(ls, k = length(ls), approx = false)
+function esp(ls, k=length(ls), approx=false)
     if (!approx)
         esp_newton(ls, k)
     else
@@ -102,43 +100,40 @@ function esp(ls, k = length(ls), approx = false)
     end
 end
 
-function esp_newton(ls, k = length(ls))
+function esp_newton(ls, k=length(ls))
     N = length(ls)
     eprev = zeros(N + 1, k + 1)
     eprev[:, 1] .= 1.0
     #    eprev[1,2:end] .= 0.
-    for l = 1:k
+    for l in 1:k
         e = zeros(N + 1)
-        for n = 1:N
-            e[n+1] = e[n] + ls[n] * eprev[n, l]
+        for n in 1:N
+            e[n + 1] = e[n] + ls[n] * eprev[n, l]
         end
-        eprev[:, l+1] = e
+        eprev[:, l + 1] = e
     end
-    eprev[N+1, 2:end]
+    return eprev[N + 1, 2:end]
 end
 
-function esp_sp(ls, kmax = length(ls))
-    exp.(log_esp_sp(ls, kmax))
+function esp_sp(ls, kmax=length(ls))
+    return exp.(log_esp_sp(ls, kmax))
 end
-
-
-
 
 #compute (log) ESPs using saddlepoint approximation
-function log_esp_sp(ls, kmax = length(ls))
+function log_esp_sp(ls, kmax=length(ls))
     n = length(ls)
-    nu = -log(sum(ls[ls.>0]))
+    nu = -log(sum(ls[ls .> 0]))
     l2pi = log(2 * π)
     logesp = zeros(kmax)
     N_EXACT = 15
     logesp[1:min(kmax, N_EXACT)] = log.(esp_newton(ls, min(kmax, N_EXACT)))
     (kmax <= N_EXACT) && return logesp
 
-    for i = 1:(kmax)
+    for i in 1:(kmax)
         if (i == n)
             logesp[i] = sum(log.(ls))
         else
-            nu = log(solve_sp(ls, i; nu0 = nu))
+            nu = log(solve_sp(ls, i; nu0=nu))
             p = ls * exp(nu)
             sig = sum(@. p / ((1 + p)^2))
             tmp = sum(log1p.(p))
