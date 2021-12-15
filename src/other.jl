@@ -10,57 +10,52 @@ Lazy representation of a distance matrix, meaning that the object can be indexed
 
 ```@example
 
-x = randn(2,100)
-D= LazyDist(x) #Euclidean dist. by default
-D[3,2] #the getindex method is defined
-D = LazyDist(x,(a,b) -> sum(abs.(a-b))) #L1 distance
-D[3,2]
+x = randn(2, 100)
+D = LazyDist(x) #Euclidean dist. by default
+D[3, 2] #the getindex method is defined
+D = LazyDist(x, (a, b) -> sum(abs.(a - b))) #L1 distance
+D[3, 2]
 ```
-
 """
 function LazyDist(x)
-    LazyDist(x, (x, y) -> norm(x - y))
+    return LazyDist(x, (x, y) -> norm(x - y))
 end
 
 function Base.getindex(D::LazyDist, i, j)
-    D.dfun(D.x[i], D.x[j])
+    return D.dfun(D.x[i], D.x[j])
 end
 
 function Base.getindex(D::LazyDist, i, j::Colon)
     xi = D.x[i]
-    Matrix([D.dfun(xi, xj) for xj in D.x]')
+    return Matrix([D.dfun(xi, xj) for xj in D.x]')
 end
 
 function Base.getindex(D::LazyDist, i::Colon, j)
     xj = D.x[j]
-    [D.dfun(xi, xj) for xi in D.x]
+    return [D.dfun(xi, xj) for xi in D.x]
 end
 
 function Base.getindex(D::LazyDist, i::Colon, j::Colon)
-    [D.dfun(xi, xj) for xi in D.x, xj in D.x]
+    return [D.dfun(xi, xj) for xi in D.x, xj in D.x]
 end
-
-
 
 function Base.size(D::LazyDist)
-    (length(D.x), length(D.x))
+    return (length(D.x), length(D.x))
 end
-
-
 
 """
     distance_sampling(x,m,sampling)
 
     Select a random subset of size m from x based on a greedy distance criterion. The initial point is selected uniformly. Then, if sampling == :farthest, at each step, the point selected is one that is farthest from all currently selected points. If sampling == :d2, the algorithm is D²-sampling [vassilvitskii2006k](@vassilvitskii2006k), which is a relaxed stochastic version of farthest-point sampling (selecting points with prob. proportional to squared distance).
 
-   ```@example
-    x = rand(2,200);
-    ind = distance_sampling(x,40,:farthest)
-    scatter(x[1,:],x[2,:],marker_z = map((v) -> v ∈ ind, 1:size(x,2)),legend=:none)
-   ```
+```@example
+x = rand(2, 200);
+ind = distance_sampling(x, 40, :farthest)
+scatter(x[1, :], x[2, :]; marker_z=map((v) -> v ∈ ind, 1:size(x, 2)), legend=:none)
+```
 """
-function distance_sampling(x::AbstractVector, m, sampling = :d2)
-    distance_sampling(LazyDist(x), m, sampling)
+function distance_sampling(x::AbstractVector, m, sampling=:d2)
+    return distance_sampling(LazyDist(x), m, sampling)
 end
 
 function distance_sampling(D::AbstractMatrix, m, sampling::Union{Symbol,Function})
@@ -90,13 +85,12 @@ function distance_sampling(D::AbstractMatrix, m, sampling::Union{Symbol,Function
         dd[i] = 0
         dd = min.(dd, D[:, i])
     end
-    collect(ind)
+    return collect(ind)
 end
 
-
-function bernoulli_process(p, nrep = 1)
+function bernoulli_process(p, nrep=1)
     if (nrep > 1)
-        [findall(rand(length(p)) .<= p) for _ = 1:nrep]
+        [findall(rand(length(p)) .<= p) for _ in 1:nrep]
     else
         findall(rand(length(p)) .<= p)
     end
@@ -104,5 +98,5 @@ end
 
 function matched_poisson(L::AbstractLEnsemble, nrep)
     p = inclusion_prob(L)
-    bernoulli_process(p)
+    return bernoulli_process(p)
 end

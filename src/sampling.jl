@@ -29,7 +29,6 @@ using LoopVectorization
 #     collect(inds)
 # end
 
-
 # function sample_pdppc(U)
 #     n = size(U,1)
 #     m = size(U,2)
@@ -70,11 +69,11 @@ function wsample(w::AbstractVector, ttl)
         i += 1
         s += w[i]
     end
-    i
+    return i
 end
 
 function sample_pdpp(U::AbstractMatrix)
-    sample_pdpp(U, vec(sum(U .^ 2, dims = 2)))
+    return sample_pdpp(U, vec(sum(U .^ 2; dims=2)))
 end
 
 function sample_pdpp(U::AbstractMatrix, lvg::AbstractVector)
@@ -89,7 +88,7 @@ function sample_pdpp(U::AbstractMatrix, lvg::AbstractVector)
     tmp = zeros(n)
     inds = BitSet()
     ss = sum(lvg)
-    @inbounds for i = 1:m
+    @inbounds for i in 1:m
         itm = wsample(p, ss)
         push!(inds, itm)
         #v = vec(Matrix(U[itm,:]))
@@ -99,14 +98,14 @@ function sample_pdpp(U::AbstractMatrix, lvg::AbstractVector)
         if i == 1
             copyto!(f, v)
         else
-            Fv = @view F[:, 1:(i-1)]
+            Fv = @view F[:, 1:(i - 1)]
             copyto!(f, v - Fv * (Fv' * v))
         end
         F[:, i] = f / sqrt(dot(v, f))
         #tmp = U*F[:,i]
         mul!(tmp, U, @view F[:, i])
         ss = 0.0
-        @turbo for j = 1:n
+        @turbo for j in 1:n
             s = p[j] - tmp[j]^2
             p[j] = (s > 0 ? s : 0)
             ss += p[j]
@@ -116,5 +115,5 @@ function sample_pdpp(U::AbstractMatrix, lvg::AbstractVector)
             p[j] = 0
         end
     end
-    collect(inds)
+    return collect(inds)
 end
