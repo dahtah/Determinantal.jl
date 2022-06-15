@@ -168,7 +168,7 @@ See also: marginal_kernel
 """
 function inclusion_prob(L::AbstractLEnsemble)
     val = L.α * L.λ ./ (1 .+ L.α * L.λ)
-    return sum((L.U * Diagonal(sqrt.(val))) .^ 2, dims = 2)
+    return vec(sum((L.U * Diagonal(sqrt.(val))) .^ 2, dims = 2))
 end
 
 function inclusion_prob(L::ProjectionEnsemble)
