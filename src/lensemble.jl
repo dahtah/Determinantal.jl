@@ -184,15 +184,48 @@ function marginal_kernel(L::ProjectionEnsemble)
     L.U * L.U'
 end
 
+
+"""
+     sample(L::ProjectionEnsemble;nsamples=1)
+
+Sample from a projection DPP. If nsamples > 1, return a vector of nsamples realisations from the process.
+
+ If n is much larger than m, this calls the optimised accept/reject sampler instead of the regular sampler. In addition, the leverage scores are precomputed if nsamples > 1.
+
+ The optimised A/R sampler is described in
+ Barthelme, S, Tremblay, N, Amblard, P-O, (2022)  A Faster Sampler for Discrete Determinantal Point Processes. 
+
+```@example
+    Z = randn(150,10) #random feature matrix
+    Pp = ProjectionEnsemble(Z)
+    sample(Pp) #should output a vector of length 10
+    sample(Pp,nsamples=5) #should output a vector of 5 realisations
+```
+"""
+function sample(L::ProjectionEnsemble;nsamples=1)
+    #use A/R alg? 
+    use_ar = (round(L.n / L.m) > 10) ? true : false
+    if (nsamples > 1) #some improvements for repeated sampling
+        lv = lvg(L.U)
+        if (use_ar)
+            [sample_pdpp_ar(L.U,lv) for _ in 1:nsamples]
+        else
+            [sample_pdpp(L.U,lv) for _ in 1:nsamples]
+        end
+    else
+        if (use_ar)
+            sample_pdpp_ar(L.U)
+        else
+            sample_pdpp(L.U)
+        end
+    end
+end
+
 """
      sample(L::AbstractEnsemble)
 
 Sample from a DPP with L-ensemble L. The return type is a BitSet (indicating which indices are sampled), use collect to get a vector of indices instead.
 """
-function sample(L::ProjectionEnsemble)
-    sample_pdpp(L.U)
-end
-
 function sample(L::AbstractLEnsemble)
     val = L.α * L.λ ./ (1 .+ L.α * L.λ)
     incl = rand(L.m) .< val
