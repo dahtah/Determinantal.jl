@@ -116,12 +116,6 @@ end
 
 
 
-
-
-
-
-
-
 @doc raw"""
    ProjectionEnsemble(V::Matrix{T},orth=true)
 
@@ -229,7 +223,11 @@ Sample from a DPP with L-ensemble L. The return type is a BitSet (indicating whi
 function sample(L::AbstractLEnsemble)
     val = L.α * L.λ ./ (1 .+ L.α * L.λ)
     incl = rand(L.m) .< val
-    sample_pdpp(L.U[:, incl])
+    if (sum(incl) > 0)
+        sample_pdpp(L.U[:, incl])
+    else
+        Vector{Int64}()
+    end
 end
 
 

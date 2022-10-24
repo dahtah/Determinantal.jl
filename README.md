@@ -31,14 +31,18 @@ See package documentation for more.
 
 This package is used in the following articles and pre-prints:
 
+- Barthelmé, S, Tremblay, N, Amblard, P-O, (2022)  A Faster Sampler for Discrete Determinantal Point Processes
 - Tremblay, N., Barthelmé, S., & Amblard, P. O. (2019). Determinantal Point Processes for Coresets. J. Mach. Learn. Res., 20, 168-1. [arxiv.org/abs/1803.08700](https://arxiv.org/abs/1803.08700)
 - Tremblay, N., Barthelmé, S., Usevich, K., & Amblard, P. O. (2021). Extended L-ensembles: a new representation for Determinantal Point Processes. arXiv preprint [arxiv.org/abs/2107.06345](https://arxiv.org/abs/2107.06345).
 - Barthelmé, S., Tremblay, N., Usevich, K., & Amblard, P. O. (2021). Determinantal Point Processes in the Flat Limit. [arxiv.org/abs/2107.07213](https://arxiv.org/abs/2107.07213).
 - Tremblay, N., Barthelmé, S., & Amblard, P. O. (2018). Optimized algorithms to sample determinantal point processes. [arxiv.org/abs/1802.08471](https://arxiv.org/abs/1802.08471).
 
+The code to reproduce the figures in Barthelmé et al. (2022) is included in the misc/sampler directory.
+
 ## Authors
 
 Simon Barthelmé (Gipsa-lab, CNRS), Nicolas Tremblay (Gipsa-lab, CNRS), Guillaume Gautier (CRIStAL). 
+
 
 ## See also
 
@@ -46,3 +50,5 @@ Another Julia toolkit for DPPs by Maruan Al-Shedivat is available [here](https:/
 
 For a full-featured DPP toolkit in Python, see
 [DPPy](https://github.com/guilgautier/DPPy) by Guillaume Gautier.
+
+

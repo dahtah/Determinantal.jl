@@ -43,7 +43,11 @@ end
 
 function sample(M::MarginalDPP)
     incl = rand(M.m) .< M.λ
-    sample_pdpp(M.U[:, incl])
+    if (sum(incl) > 0)
+        sample_pdpp(M.U[:, incl])
+    else
+        Vector{Int64}()
+    end
 end
 
 function cardinal(M::MarginalDPP)

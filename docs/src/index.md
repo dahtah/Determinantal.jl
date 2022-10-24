@@ -69,7 +69,8 @@ rescale!(dpp,50) #scale so that the expected size is 50
 ind = sample(dpp) #a sample from the DPP (indices)
 
 using Plots
-pyplot() # hide
+
+gr() #hide
 scatter(x[1,:],x[2,:],marker_z = map((v) -> v ∈ ind, 1:size(x,2)),legend=:none,alpha=.75) #hide
 ```
 
@@ -172,7 +173,7 @@ A sensible set of features to use are multivariate polynomial features, here use
 x = randn(2,1000)
 Lp = polyfeatures(ColVecs(x),10) |> ProjectionEnsemble
 ind = sample(Lp)
-Plots.scatter(x[1,:],x[2,:],color=:gray,alpha=.5) # hide
+Plots.scatter(x[1,:],x[2,:],color=:gray,alpha=.5,legend=:none) # hide
 Plots.scatter!(x[1,ind],x[2,ind],color=:red,alpha=1) # hide
 ```
 
@@ -185,7 +186,7 @@ using StatsBase,Statistics
 #sample 1,000 times and compute empirical inclusion frequencies
 reps = [StatsBase.counts(sample(Lp),1:Lp.n) for _ in 1:1000];
 #compare to theoretical values
-scatter(inclusion_prob(Lp),mean(reps))
+scatter(inclusion_prob(Lp),mean(reps),legend=:none)
 ```
 
 So far these are just first-order inclusion probabilities. More generally, you can obtain higher-order probabilities (ie prob that items i,j,k,... are in the set *jointly*) from the marginal kernel of the DPP, given by "marginal_kernel"
@@ -221,19 +222,19 @@ In D²-sampling [vassilvitskii2006k](@cite), which is a relaxed stochastic versi
 ```@example ex1
 x = rand(2,1000);
 ind = distance_sampling(ColVecs(x),40,:farthest)
-scatter(x[1,ind],x[2,ind],title="Farthest-point sample")
+scatter(x[1,ind],x[2,ind],title="Farthest-point sample",legend=:none)
 ```
 
 ```@example ex1
 ind = distance_sampling(ColVecs(x),40,:d2)
-scatter(x[1,ind],x[2,ind],title="D² sample")
+scatter(x[1,ind],x[2,ind],title="D² sample",legend=:none)
 ```
 
 You can obtain other methods by changing how the prob. of selection depends on the distance. For instance, selecting points uniformly as long as they are more than distance $r$ away from the other points gives a so-called "hard-sphere" sample.
 
 ```@example ex1
 ind = distance_sampling(ColVecs(x),40,(v)-> v > .1) #may get fewer than 40 points
-scatter(x[1,ind],x[2,ind],title="Hard-sphere sample")
+scatter(x[1,ind],x[2,ind],title="Hard-sphere sample",legend=:none)
 ```
 
 Distance-based sampling is quite general, all it needs is a (pseudo-)distance matrix.
@@ -241,7 +242,7 @@ Distance-based sampling is quite general, all it needs is a (pseudo-)distance ma
 ```@example ex1
 D = [sum(abs.(a-b)) for a in eachcol(x), b in eachcol(x)] #L1 distance
 ind = distance_sampling(D,40,(v)-> v > .1) #may get fewer than 40 points
-scatter(x[1,ind],x[2,ind],title="Hard-sphere sample in L1 dist")
+scatter(x[1,ind],x[2,ind],title="Hard-sphere sample in L1 dist",legend=:none)
 ```
 
 For datasets that are large, it may not be wise (or even possible) to pre-compute and hold a full distance matrix in memory. You can use the LazyDist type, which behaves like a standard matrix, but whose entries are computed on-the-fly and not stored:
