@@ -1,3 +1,5 @@
+using LoopVectorization
+
 function vdm(x::Array{T,1}, order::Int) where {T<:Real}
     [u^k for u in x, k = 0:order]
 end
@@ -80,6 +82,48 @@ function rff(X::AbstractMatrix, m, σ) #assume x is d × n
     g = (x) -> sin(x) / s
     [f.(T) g.(T)] |> LowRank
 end
+
+# function rff_opt(X::AbstractMatrix, m, σ) #assume x is d × n
+#     d = size(X, 1)
+#     n = size(X, 2)
+#     Ω = randn(d, m) / sqrt(σ^2)
+#     T = X' * Ω
+#     s = sqrt(m)
+#     Z = Matrix{eltype(X)}(undef,n,2m)
+#     f = (x) -> cos(x) / s
+#     g = (x) -> sin(x) / s
+    
+#     @turbo for i in 1:m
+#         for j in 1:n
+#             Z[j,i] = cos(T[j,i])/s
+#             Z[j,m+i] = sin(T[j,i])/s
+#         end
+#     end
+#     LowRank(Z)
+# end
+
+#faster RFF implementation using LoopVectorization.jl
+function rff_fused(X::AbstractMatrix, m, σ) #assume x is d × n
+    d = size(X, 1)
+    n = size(X, 2)
+    s = sqrt(m)
+    Z = Matrix{eltype(X)}(undef,n,2m)
+    Ω = randn(d, m)
+    @turbo for i in 1:m
+        for j in 1:n
+            tij = zero(eltype(X))
+            for k in 1:d
+                tij += X[k,j]*Ω[k,i] / σ
+                #tij += X[k,j]*ω[k]
+            end
+            Z[j,i] = cos(tij)/s
+            Z[j,m+i] = sin(tij)/s
+        end
+    end
+    LowRank(Z)
+end
+
+
 
 
 function rff(x::ColVecs, m, σ)

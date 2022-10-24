@@ -27,11 +27,6 @@ mutable struct EllEnsemble{T} <: AbstractLEnsemble
         n = size(L, 1)
         new(L, U, λ, n, length(λ), T(1.0))
     end
-    # function FullRankEnsemble{T}(X::AbstractVector{T},k :: Kernel) where T
-    #     V = kernelmatrix(Val(:col),k,X)
-    #     FullRankEnsemble{T}(V)
-    # end
-
 end
 
 """

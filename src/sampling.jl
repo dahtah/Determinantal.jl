@@ -95,7 +95,7 @@ function sample_pdpp(U::AbstractMatrix, lvg::AbstractVector)
     m = size(U, 2)
     #Initial distribution
     #Um = Matrix(U)
-    p = lvg
+    p = copy(lvg)
     F = zeros(Float64, m, m)
     f = zeros(m)
     v = zeros(m)
@@ -116,7 +116,6 @@ function sample_pdpp(U::AbstractMatrix, lvg::AbstractVector)
             copyto!(f, v - Fv * (Fv' * v))
         end
         F[:, i] = f / sqrt(dot(v, f))
-        #tmp = U*F[:,i]
         mul!(tmp, U, @view F[:, i])
         ss = 0.0
         @turbo for j in 1:n
@@ -188,21 +187,29 @@ function sample_pdpp_mixed(U,lv,cutoff)
 end
 
 function sample_pdpp_ar(U)
+    sample_pdpp_ar(U,lvg(U))
+end
+
+function sample_pdpp_ar(U,lvg)
     n = size(U,1)
     m = size(U,2)
     #Initial distribution
-    p0 = lvg(U)
+    p0 = copy(lvg)
     al = setup_alias(p0)
     rng = MersenneTwister()
     Q = zeros(Float64,m,m)
     inds = BitSet()
     f = zeros(m)
+    max_attempts = 150*m
     for ind in 1:m
         accept = false
         itm =  sample_alias(rng,al)
         nattempts = 1
         Qv = @view Q[:,1:(ind-1)]
         while !accept
+            while (itm ∈ inds)
+                itm = sample_alias(rng,al)
+            end
             pp = p0[itm] - sum((Qv'*U[itm,:]).^2)
             if (rand() < pp/p0[itm])
                 accept = true
@@ -210,16 +217,22 @@ function sample_pdpp_ar(U)
                 itm = sample_alias(rng,al)
                 nattempts+=1
             end
-            (nattempts > 1e4) && error("Too many attempts")
+            if (nattempts > max_attempts)
+                error("Too many A/R attempts, $(nattempts) at index $(ind). Make sure that U is actually an orthonormal matrix")
+            end
         end
         push!(inds,itm)
         f .= U[itm,:]
         #Gram-Schmidt
-        f -= Q*(Q'*f)
+        f -= Qv*(Qv'*f)
         Q[:,ind] = f/norm(f)
     end
+    #collect(inds),Q
     collect(inds)
 end
+
+
+
 
 #slow!!! reimplement in block-wise manner
 function early_reject(itm,Qv,Ui,ind,p0)
