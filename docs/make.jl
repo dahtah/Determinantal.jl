@@ -5,7 +5,10 @@ using DocumenterCitations
 #     bib,
 #     sitename = "DPP.jl")
 
-bib = CitationBibliography("biblio.bib")
+#when ran locally
+#bib = CitationBibliography("biblio.bib")
+#on gh
+bib = CitationBibliography("docs/biblio.bib")
 makedocs(
     bib;
     sitename="DPP.jl",
