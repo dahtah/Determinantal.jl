@@ -22,7 +22,7 @@ greedy_subset(gaussker(x),12)
 
 """
 function greedy_subset(L::AbstractLEnsemble, k)
-    greedy_subset(L.L, k)
+    return greedy_subset(L.L, k)
 end
 
 function greedy_subset(L::AbstractMatrix, k)
@@ -36,11 +36,11 @@ function greedy_subset(L::AbstractMatrix, k)
     Q = ones(1, 1) ./ L[i, i]
     Lv = L[:, i]
     dL = diag(L)
-    for iter = 2:k
+    for iter in 2:k
         #ld = diag(L) - Q*Lv
         opti = 0
         optv = 0
-        @inbounds for i = 1:n
+        @inbounds for i in 1:n
             if i ∉ ind
                 dets[i] = L[i, i] - dot(Lv[i, :], Q * Lv[i, :])
                 if (optv < dets[i])
@@ -54,8 +54,6 @@ function greedy_subset(L::AbstractMatrix, k)
         #dets_tst = map(g,1:L.n)
         #@show extrema(dets)
         #optv,opti = findmin(dets)
-
-
 
         if (opti <= 0) && iter < k
             break
@@ -71,7 +69,7 @@ function greedy_subset(L::AbstractMatrix, k)
         end
         push!(ind, opti)
     end
-    collect(ind)
+    return collect(ind)
 end
 
 # function greedy_subset_k3(L :: AbstractLEnsemble,k)
@@ -107,8 +105,6 @@ end
 # #        @show sum(dets .< 0)
 #         #optv,opti = findmin(dets)
 
-
-
 #         if (opti <= 0) && iter < k
 #             break
 #         end
@@ -122,8 +118,6 @@ end
 #     collect(ind)
 # end
 
-
-
 #Let K' = [Q^-1 r; r' α], find inverse of K' given Q
 function update_inverse(Q, r, α)
     #  @show Q,r,α
@@ -131,5 +125,5 @@ function update_inverse(Q, r, α)
     C2inv = 1 / (α - dot(r, v))
     C1inv = Q + (r * r') * C2inv
     a = -v * C2inv
-    [C1inv a; a' C2inv]
+    return [C1inv a; a' C2inv]
 end

@@ -15,30 +15,28 @@ mutable struct MarginalDPP{T}
         λ = max.(eg.values, eps(T))
         @assert maximum(λ) <= 1.0 "Eigenvalues need to be less than or equal to 1"
         n = size(K, 1)
-        new(K, U, λ, n, length(λ))
+        return new(K, U, λ, n, length(λ))
     end
-
 end
-
 
 function show(io::IO, e::MarginalDPP)
     println(io, "DPP with marginal kernel representation.")
-    println(io, "Number of items in ground set : $(nitems(e)).")
+    return println(io, "Number of items in ground set : $(nitems(e)).")
 end
 
 """
-   MarginalDPP(V::Matrix{T})
+MarginalDPP(V::Matrix{T})
 
 Construct a DPP from a matrix defining the marginal kernel. Here the matrix must be square and its eigenvalues must be between 0 and 1.
 """
 MarginalDPP(V::AbstractMatrix{T}) where {T} = MarginalDPP{T}(V)
 
 function inclusion_prob(M::MarginalDPP)
-    diag(M.K)
+    return diag(M.K)
 end
 
 function marginal_kernel(M::MarginalDPP)
-    M.K
+    return M.K
 end
 
 function sample(M::MarginalDPP)
@@ -52,5 +50,5 @@ end
 
 function cardinal(M::MarginalDPP)
     p = M.λ
-    (mean = sum(p), std = sqrt(sum(p .* (1 .- p))))
+    return (mean=sum(p), std=sqrt(sum(p .* (1 .- p))))
 end

@@ -7,10 +7,10 @@ using DocumenterCitations
 
 bib = CitationBibliography("biblio.bib")
 makedocs(
-    bib,
-    sitename = "DPP.jl",
-    format = Documenter.HTML(
-        mathengine = MathJax(
+    bib;
+    sitename="DPP.jl",
+    format=Documenter.HTML(;
+        mathengine=MathJax(
             Dict(
                 :TeX => Dict(
                     :equationNumbers => Dict(:autoNumber => "AMS"),
@@ -32,5 +32,4 @@ makedocs(
     ),
 )
 
-
-deploydocs(repo = "github.com/dahtah/DPP.jl.git", devbranch = "main")
+deploydocs(; repo="github.com/dahtah/DPP.jl.git", devbranch="main")

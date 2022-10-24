@@ -16,7 +16,7 @@ function ExtEnsemble(M::Matrix, V::Matrix)
     #Orthogonalise (inefficient)
     Morth = (I - Lproj.U * Lproj.U') * (M * (I - Lproj.U * Lproj.U'))
     Lopt = EllEnsemble((Morth + Morth') / 2)
-    ExtEnsemble(Lopt, Lproj, M, V, 1.0)
+    return ExtEnsemble(Lopt, Lproj, M, V, 1.0)
 end
 
 nitems(L::ExtEnsemble) = nitems(L.Lopt)
@@ -52,7 +52,6 @@ function log_prob(L::ExtEnsemble, ind)
     end
 end
 
-
 function show(io::IO, e::ExtEnsemble)
     println(io, "Partial projection DPP.")
     println(
@@ -60,23 +59,21 @@ function show(io::IO, e::ExtEnsemble)
         "Number of items in ground set : $(nitems(e)). Max. rank :
 $(maxrank(e))",
     )
-    println(io, "Rank of projective part : $(maxrank(e.Lproj))")
+    return println(io, "Rank of projective part : $(maxrank(e.Lproj))")
 end
 
 function rescale!(L::ExtEnsemble, k)
     @assert min_items(L) < k <= maxrank(L)
-    L.α = rescale!(L.Lopt, k - min_items(L))
+    return L.α = rescale!(L.Lopt, k - min_items(L))
 end
-
 
 function sample(L::ExtEnsemble)
     r = maxrank(L.Lproj)
     λ = eigenvalues(L.Lopt)
     val = @. λ / (1 + λ)
     ii = rand(length(val)) .< val
-    sample_pdpp([L.Lproj.U L.Lopt.U[:, ii]])
+    return sample_pdpp([L.Lproj.U L.Lopt.U[:, ii]])
 end
-
 
 function sample(L::ExtEnsemble, k)
     @assert(k >= maxrank(L.Lproj))
@@ -94,17 +91,17 @@ function inclusion_prob(L::ExtEnsemble, k)
     @assert k >= maxrank(L.Lproj)
     m = k - maxrank(L.Lproj)
     if (m == 0)
-        sum((L.Lproj.U) .^ 2, dims = 2)
+        sum((L.Lproj.U) .^ 2; dims=2)
     else
         val = inclusion_prob_diag(λ, m)
-        val[val.<0] .= 0
-        val[val.>1] .= 1
+        val[val .< 0] .= 0
+        val[val .> 1] .= 1
         val = (val ./ sum(val)) .* m
-        return sum((L.Lopt.U * Diagonal(sqrt.(val))) .^ 2, dims = 2) +
-               sum((L.Lproj.U) .^ 2, dims = 2)
+        return sum((L.Lopt.U * Diagonal(sqrt.(val))) .^ 2; dims=2) +
+               sum((L.Lproj.U) .^ 2; dims=2)
     end
 end
 
 function marginal_kernel(L::ExtEnsemble)
-    marginal_kernel(L.Lopt) + marginal_kernel(L.Lproj)
+    return marginal_kernel(L.Lopt) + marginal_kernel(L.Lproj)
 end

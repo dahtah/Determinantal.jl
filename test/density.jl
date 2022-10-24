@@ -9,19 +9,19 @@ import Combinatorics.combinations
         ProjectionEnsemble(randn(n, 3)),
     ]
     for L in Ls
-        pr = map((ind) -> log_prob(L, ind) |> exp, combinations(1:nitems(L)))
+        pr = map((ind) -> exp(log_prob(L, ind)), combinations(1:nitems(L)))
         @assert sum(pr) + exp(log_prob(L, [])) ≈ 1
     end
     Ls = [FullRankEnsemble(gaussker(X)), LowRankEnsemble(randn(n, 3))]
     #Test invariance to rescaling
     for L in Ls
         rescale!(L, 2)
-        pr = map((ind) -> log_prob(L, ind) |> exp, combinations(1:nitems(L)))
+        pr = map((ind) -> exp(log_prob(L, ind)), combinations(1:nitems(L)))
         @assert sum(pr) + exp(log_prob(L, [])) ≈ 1
     end
     for L in Ls
-        for k = 1:maxrank(L)
-            pr = map((ind) -> log_prob(L, ind, k) |> exp, combinations(1:nitems(L), k))
+        for k in 1:maxrank(L)
+            pr = map((ind) -> exp(log_prob(L, ind, k)), combinations(1:nitems(L), k))
             @show k, sum(pr)
             @assert sum(pr) ≈ 1
         end
@@ -37,19 +37,16 @@ import Combinatorics.combinations
         @assert abs(log(tmp) - DPP.logz(L)) < 1e-4
     end
 
-
     for L in Ls
-        pr = map((ind) -> log_prob(L, ind) |> exp, combinations(1:nitems(L)))
+        pr = map((ind) -> exp(log_prob(L, ind)), combinations(1:nitems(L)))
         @assert sum(pr) ≈ 1
     end
 
     for L in Ls
-        for k = DPP.min_items(L):n
-            pr = map((ind) -> log_prob(L, ind, k) |> exp, combinations(1:nitems(L), k))
+        for k in DPP.min_items(L):n
+            pr = map((ind) -> exp(log_prob(L, ind, k)), combinations(1:nitems(L), k))
             @show k, sum(pr)
             @assert sum(pr) ≈ 1
         end
     end
-
-
 end
