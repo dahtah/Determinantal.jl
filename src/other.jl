@@ -50,7 +50,7 @@ end
 
 ```@example
 x = rand(2, 200);
-ind = distance_sampling(x, 40, :farthest)
+ind = distance_sampling(ColVecs(x), 40, :farthest)
 scatter(x[1, :], x[2, :]; marker_z=map((v) -> v ∈ ind, 1:size(x, 2)), legend=:none)
 ```
 """
