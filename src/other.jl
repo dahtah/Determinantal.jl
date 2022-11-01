@@ -60,6 +60,7 @@ end
 
 function distance_sampling(D::AbstractMatrix, m, sampling::Union{Symbol,Function})
     @assert size(D, 1) == size(D, 2)
+    @assert m <= size(D,1)
     if (isa(sampling, Symbol))
         @assert sampling ∈ [:d2, :farthest]
     end

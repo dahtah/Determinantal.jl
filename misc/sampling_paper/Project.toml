@@ -1,0 +1,4 @@
+[deps]
+DPP = "2673d5e8-682c-11e9-2dfd-471b09c6c819"
+KernelFunctions = "ec8451be-7e33-11e9-00cf-bbf324bd1392"
+LowRankApprox = "898213cb-b102-5a47-900c-97e73b919f73"

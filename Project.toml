@@ -1,9 +1,6 @@
 name = "DPP"
 uuid = "2673d5e8-682c-11e9-2dfd-471b09c6c819"
-authors = [
-    "Simon Barthelme <simon.barthelme@gipsa-lab.fr>",
-    "Nicolas Tremblay <nicolas.tremblay@gipsa-lab.fr>",
-]
+authors = ["Simon Barthelme <simon.barthelme@gipsa-lab.fr>", "Nicolas Tremblay <nicolas.tremblay@gipsa-lab.fr>"]
 version = "0.1.1"
 
 [deps]
@@ -14,6 +11,6 @@ LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 LoopVectorization = "bdcacae8-1622-11e9-2a5c-532679323890"
 NearestNeighbors = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
-StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

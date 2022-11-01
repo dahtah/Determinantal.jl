@@ -1,7 +1,13 @@
 push!(LOAD_PATH, "../src/")
 using Documenter, DPP
 using DocumenterCitations
+# makedocs(
+#     bib,
+#     sitename = "DPP.jl")
 
+#when ran locally
+#bib = CitationBibliography("biblio.bib")
+#on gh
 bib = CitationBibliography("docs/biblio.bib")
 makedocs(
     bib;

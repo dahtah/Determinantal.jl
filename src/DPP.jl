@@ -41,4 +41,5 @@ include("ppensembles.jl")
 include("kldiv.jl")
 include("nystrom.jl")
 include("other.jl")
+#include("pivotal_sampling.jl")
 end # module
