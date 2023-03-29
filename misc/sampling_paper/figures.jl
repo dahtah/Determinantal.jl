@@ -6,12 +6,12 @@
 #] instantiate
 #load figures.jl, then run
 #plot_runtime()
-using DPP,Plots,BenchmarkTools,KernelFunctions,LowRankApprox
+using Determinantal,Plots,BenchmarkTools,KernelFunctions,LowRankApprox
 
 function sample_ar(L::AbstractLEnsemble)
     val = L.α * L.λ ./ (1 .+ L.α * L.λ)
     incl = rand(L.m) .< val
-    DPP.sample_pdpp_ar(L.U[:, incl])
+    Determinantal.sample_pdpp_ar(L.U[:, incl])
 end
 
 function sample_pqr(x,p,m,ar=false)
@@ -19,9 +19,9 @@ function sample_pqr(x,p,m,ar=false)
     t1 = @elapsed Kf=kernelmatrix(SqExponentialKernel(),x,y);
     t2 = @elapsed F=pqrfact(Kf,rank=m);
     if (ar)
-        t3 = @elapsed  DPP.sample_pdpp_ar(F.Q)
+        t3 = @elapsed  Determinantal.sample_pdpp_ar(F.Q)
     else
-        t3 = @elapsed DPP.sample_pdpp(F.Q)
+        t3 = @elapsed Determinantal.sample_pdpp(F.Q)
     end
     [t1,t2,t3]
     #F
@@ -36,21 +36,21 @@ function runtime_pqr(n,m)
 end
 
 function sample_rff(x,p,m,ar=false)
-    ell = EllEnsemble(DPP.rff_fused(x,Int(floor(p/2)),1.0))
+    ell = EllEnsemble(Determinantal.rff_fused(x,Int(floor(p/2)),1.0))
     rescale!(ell,m)
     if (ar)
         sample_ar(ell)
     else
-        DPP.sample(ell)
+        Determinantal.sample(ell)
     end
 end
 
 function runtime(n,m)
     Qt=Matrix(Matrix(qr(randn(n,m)).Q)');
     Q = Qt';
-    lv = DPP.lvg(Q);
-    m_o=median([@elapsed DPP.sample_pdpp(Q,lv) for _ in 1:100])
-    m_n=median([@elapsed DPP.sample_pdpp_ar(Q,lv) for _ in 1:100])
+    lv = Determinantal.lvg(Q);
+    m_o=median([@elapsed Determinantal.sample_pdpp(Q,lv) for _ in 1:100])
+    m_n=median([@elapsed Determinantal.sample_pdpp_ar(Q,lv) for _ in 1:100])
     [m_o,m_n]
 end
 

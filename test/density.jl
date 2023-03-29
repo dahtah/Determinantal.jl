@@ -33,8 +33,8 @@ import Combinatorics.combinations
     Ls = [ExtEnsemble(gaussker(ColVecs(X)), U[:, 1:2]), ExtEnsemble(gaussker(ColVecs(X)), U)]
 
     for L in Ls
-        tmp = sum(map((i) -> exp(DPP.logz(L, i)), DPP.min_items(L):n))
-        @assert abs(log(tmp) - DPP.logz(L)) < 1e-4
+        tmp = sum(map((i) -> exp(Determinantal.logz(L, i)), Determinantal.min_items(L):n))
+        @assert abs(log(tmp) - Determinantal.logz(L)) < 1e-4
     end
 
     for L in Ls
@@ -43,7 +43,7 @@ import Combinatorics.combinations
     end
 
     for L in Ls
-        for k in DPP.min_items(L):n
+        for k in Determinantal.min_items(L):n
             pr = map((ind) -> exp(log_prob(L, ind, k)), combinations(1:nitems(L), k))
             @show k, sum(pr)
             @assert sum(pr) ≈ 1

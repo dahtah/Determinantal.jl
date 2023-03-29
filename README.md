@@ -1,6 +1,6 @@
-[![Documentation (latest)](https://img.shields.io/badge/docs-dev-blue.svg)](https://dahtah.github.io/DPP.jl/dev)
+[![Documentation (latest)](https://img.shields.io/badge/docs-dev-blue.svg)](https://dahtah.github.io/Determinantal.jl/dev)
 
-# DPP.jl: Determinantal Point Processes in Julia
+# Determinantal.jl: Determinantal Point Processes in Julia
 
 Determinantal Point Processes are point processes with repulsion properties: define an appropriate function for representing similarity between items, and a DPP will sample a subset of "representative" items, i.e. ones that does not contain two items that are too similar.
 
@@ -9,7 +9,7 @@ This package focuses on discrete DPPs. Continuous DPPs are not supported (yet). 
 ## Quick start
 
 ```{julia}
-using DPP
+using Determinantal
 
 x = randn(2,500) #some points in dim 2
 
@@ -43,8 +43,9 @@ The code to reproduce the figures in Barthelmé et al. (2022) is included in the
 
 Simon Barthelmé (Gipsa-lab, CNRS), Nicolas Tremblay (Gipsa-lab, CNRS), Guillaume Gautier (CRIStAL). 
 
-
 ## See also
+
+This package used to be called DPP.jl (the name was changed following package registration, as per official package-naming guidelines).
 
 Another Julia toolkit for DPPs by Maruan Al-Shedivat is available [here](https://github.com/alshedivat/DeterminantalPointProcesses.jl).
 

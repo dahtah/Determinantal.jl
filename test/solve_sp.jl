@@ -2,7 +2,7 @@
     f = (ls) -> sum(ls ./ (1 .+ ls))
     ls = collect(1:10)
     for k in 1:9
-        α = DPP.solve_sp(ls, k)
+        α = Determinantal.solve_sp(ls, k)
         @test abs(f(α * ls) - k) < 1e-5
     end
     X = randn(3, 10)

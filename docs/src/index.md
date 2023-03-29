@@ -1,6 +1,6 @@
-# DPP.jl: a Julia package for sampling Determinantal Point Processes
+# Determinantal.jl: a Julia package for sampling Determinantal Point Processes
 
-DPP.jl provides some types and functions for sampling from DPPs (and related mod
+Determinantal.jl provides some types and functions for sampling from DPPs (and related mod
 els).
 
 # Brief background
@@ -27,7 +27,7 @@ p(S \subseteq \X) = K_{ii} K_{jj} - K_{ij}^2
 
 Because $K_{ij}^2$ is non-negative, this means that the probability of getting both $i$ and $j$ is less than the product of the invididual probabilities. This tells us that a DPP is in general repulsive (compared to a Poisson process).
 
-Here is an example of defining a very simple DPP in DPP.jl, over a set of size 2, using the matrix
+Here is an example of defining a very simple DPP in Determinantal.jl, over a set of size 2, using the matrix
 
 ```math
 \bK = \begin{pmatrix}
@@ -37,7 +37,7 @@ Here is an example of defining a very simple DPP in DPP.jl, over a set of size 2
 ```
 
 ```@example ex1
-using DPP
+using Determinantal
 #A 2x2 matrix, so here Ω={1,2}
 K = [3 1; 1 3]/4
 dpp = MarginalDPP(K)
@@ -56,7 +56,7 @@ p(\X=X) \propto \det \bL_{X}
 ```
 
 This equation relates the *likelihood* (probability mass function) of the DPP to the determinant of a submatrix. Subsets s.t. $\bL_{X}$ is large have a high probability of being selected. It is quite natural to define a L-ensemble based on kernel matrix that measures similarity (i.e. where $L_{ij}$ measures the similarity of points $i$ and $j$). Submatrices of $\bL$ with points that are unlike one another (diverse) will be closer to the identity matrix and therefore have a higher determinant.
-The next example shows a more realistic use of DPP.jl
+The next example shows a more realistic use of Determinantal.jl
 
 ```@example ex1
 using LinearAlgebra
@@ -78,7 +78,7 @@ The line `rescale!(dpp,50)` sets the expected size of the L-ensemble to 50. One 
 
 ## Using other kernels
 
-EllEnsemble requires a SPD matrix as input. For more exotic kernels than the Gaussian, you can either do things by hand or use [KernelFunctions.jl](https://github.com/JuliaGaussianProcesses/KernelFunctions.jl/), which DPP.jl supports.
+EllEnsemble requires a SPD matrix as input. For more exotic kernels than the Gaussian, you can either do things by hand or use [KernelFunctions.jl](https://github.com/JuliaGaussianProcesses/KernelFunctions.jl/), which Determinantal.jl supports.
 
 ```@example ex1
 using KernelFunctions
@@ -94,7 +94,7 @@ See the documentation of [KernelFunctions.jl](https://juliagaussianprocesses.git
 
 L-ensembles defined using a full-rank matrix are expensive in large $n$, because they require an eigendecomposition of the $\bL$ matrix (at cost $\O(n^3)$). For practical applications in large $n$ it is preferable to use a low-rank ensemble, i.e. one such that $\bL = \bM \bM^t$ with $\bM$ a $n$ times $m$ matrix with $m \ll n$.
 
-DPP.jl provides a type called "LowRank" that represents a symmetric low-rank matrix efficiently:
+Determinantal.jl provides a type called "LowRank" that represents a symmetric low-rank matrix efficiently:
 
 ```@example ex1
 Z = randn(5,2)
@@ -132,7 +132,7 @@ plot(sort(lex.λ,rev=true)); plot!(sort(lr.λ,rev=true),legend=:none) # hide
 
 The plot shows the approximation of the spectrum of the kernel matrix by the low-rank approximation.
 
-Using low-rank representations DPP.jl can scale up to millions of points. Keep in mind that DPPs have good scaling in the size of $\Omega$ (n) but poor scaling in the rank ($m$, number of columns of $\bM$). The overall cost scales as $\O(nm^2)$, so $m$ should be kept in the hundreds at most.
+Using low-rank representations Determinantal.jl can scale up to millions of points. Keep in mind that DPPs have good scaling in the size of $\Omega$ (n) but poor scaling in the rank ($m$, number of columns of $\bM$). The overall cost scales as $\O(nm^2)$, so $m$ should be kept in the hundreds at most.
 
 As an alternative to Random Fourier Features, we also provide an implementation of the Nyström approximation [williams2001using](@cite). The function again returns a matrix $\bM$ such that $\bL \approx \bM \bM^t$, but the approximation is formed using a subset of points.
 
@@ -196,7 +196,7 @@ In the next example we compute the empirical inclusion probability of a set of i
 ```@example ex1
 using Statistics
 x = randn(2,10)
-L = DPP.gaussker(ColVecs(x),.5) |> EllEnsemble
+L = Determinantal.gaussker(ColVecs(x),.5) |> EllEnsemble
 rescale!(L,4)
 set = [3,5]
 
@@ -213,7 +213,7 @@ th = det(marginal_kernel(L)[set,set])
 
 # Other sampling methods
 
-DPP.jl offers other sampling methods that are based on inter-point distances.
+Determinantal.jl offers other sampling methods that are based on inter-point distances.
 
 In these algorithms, the initial point is selected uniformly. At all subsequent steps, the next point is selected based on its distance to the current set $\X(t)$, meaning $d_t(x,\X(t)) = \min  \{ d(x,x_i) | x_i \in \X(t) \}$.
 The sampling probability depends on the method. In farthest-point sampling, which is deterministic, at each step, the point selected is one that is farthest from all currently selected points.
@@ -266,7 +266,7 @@ p(\X=X) \propto \det \begin{pmatrix}
 
 $\bV$ should be thought of as defining "mandatory" features of the DPP, while $\bL$ can be interpreted more or less as a regular kernel, see  [tremblay2021extended](@cite).
 
-DPP.jl provides some basic support for defining extended L-ensembles. The following is the "default" DPP described in  [tremblay2021extended](@cite), at order 3.
+Determinantal.jl provides some basic support for defining extended L-ensembles. The following is the "default" DPP described in  [tremblay2021extended](@cite), at order 3.
 
 ```@example ex1
 x = randn(2,1000)

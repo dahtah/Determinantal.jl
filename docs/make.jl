@@ -1,9 +1,9 @@
 push!(LOAD_PATH, "../src/")
-using Documenter, DPP
+using Documenter, Determinantal
 using DocumenterCitations
 # makedocs(
 #     bib,
-#     sitename = "DPP.jl")
+#     sitename = "Determinantal.jl")
 
 #when ran locally
 #bib = CitationBibliography("biblio.bib")
@@ -11,7 +11,7 @@ using DocumenterCitations
 bib = CitationBibliography("docs/biblio.bib")
 makedocs(
     bib;
-    sitename="DPP.jl",
+    sitename="Determinantal.jl",
     format=Documenter.HTML(;
         mathengine=MathJax(
             Dict(
@@ -35,4 +35,4 @@ makedocs(
     ),
 )
 
-deploydocs(; repo="github.com/dahtah/DPP.jl.git", devbranch="main")
+deploydocs(; repo="github.com/dahtah/Determinantal.jl.git", devbranch="main")

@@ -1,4 +1,4 @@
-module DPP
+module Determinantal
 using LinearAlgebra, StatsBase, Combinatorics, Distances, KernelFunctions
 import Base.show, Base.getindex, LinearAlgebra.diag
 export LowRank,

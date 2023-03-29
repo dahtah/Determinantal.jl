@@ -1,4 +1,4 @@
-name = "DPP"
+name = "Determinantal"
 uuid = "2673d5e8-682c-11e9-2dfd-471b09c6c819"
 authors = ["Simon Barthelme <simon.barthelme@gipsa-lab.fr>", "Nicolas Tremblay <nicolas.tremblay@gipsa-lab.fr>"]
 version = "0.2.0"

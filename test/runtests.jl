@@ -1,12 +1,12 @@
 #basic structure copied from LightGraphs.jl
-using DPP
+using Determinantal
 using Test
 using LinearAlgebra
 
 const testdir = dirname(@__FILE__)
 tests = ["solve_sp", "sample_dpp", "incl_prob", "density"]
 
-@testset "DPP" begin
+@testset "Determinantal" begin
     for t in tests
         tp = joinpath(testdir, "$(t).jl")
         include(tp)
