@@ -1,5 +1,5 @@
 [deps]
-Debugger = "31a5f54b-26ea-5ae9-a837-f05ce5417438"
+Determinantal = "2673d5e8-682c-11e9-2dfd-471b09c6c819"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 DocumenterCitations = "daee34ce-89f3-4625-b898-19384cb65244"
 KernelFunctions = "ec8451be-7e33-11e9-00cf-bbf324bd1392"
