@@ -51,5 +51,3 @@ Another Julia toolkit for DPPs by Maruan Al-Shedivat is available [here](https:/
 
 For a full-featured DPP toolkit in Python, see
 [DPPy](https://github.com/guilgautier/DPPy) by Guillaume Gautier.
-
-
