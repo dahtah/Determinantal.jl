@@ -4,15 +4,15 @@ import Combinatorics.combinations
     n = 6
     X = randn(2, n)
     Ls = [
-        FullRankEnsemble(gaussker(X)),
-        LowRankEnsemble(randn(n, 3)),
+        EllEnsemble(gaussker(ColVecs(X))),
+        EllEnsemble(LowRank(randn(n, 3))),
         ProjectionEnsemble(randn(n, 3)),
     ]
     for L in Ls
         pr = map((ind) -> exp(log_prob(L, ind)), combinations(1:nitems(L)))
         @assert sum(pr) + exp(log_prob(L, [])) ≈ 1
     end
-    Ls = [FullRankEnsemble(gaussker(X)), LowRankEnsemble(randn(n, 3))]
+    Ls = [EllEnsemble(gaussker(ColVecs(X))), EllEnsemble(LowRank(randn(n, 3)))]
     #Test invariance to rescaling
     for L in Ls
         rescale!(L, 2)
@@ -27,10 +27,10 @@ import Combinatorics.combinations
         end
     end
     n = 6
-    #Test partial projection ensembles
+    #Test extended L-ensembles
     X = randn(2, n)
     U = randn(n, 3)
-    Ls = [PPEnsemble(gaussker(X), U[:, 1:2]), PPEnsemble(gaussker(X), U)]
+    Ls = [ExtEnsemble(gaussker(ColVecs(X)), U[:, 1:2]), ExtEnsemble(gaussker(ColVecs(X)), U)]
 
     for L in Ls
         tmp = sum(map((i) -> exp(DPP.logz(L, i)), DPP.min_items(L):n))

@@ -1,20 +1,22 @@
 @testset "sample_dpp" begin
-    Lr = LowRankEnsemble(randn(10, 4))
+    Lr = EllEnsemble(LowRank(randn(10, 4)))
     @test length(sample(Lr)) <= 4
     @test length(sample(Lr, 3)) <= 3
 
     Lp = ProjectionEnsemble(randn(10, 4))
     @test length(sample(Lp)) == 4
 
-    #Test a strong property: for a certain L-ensemble based on the incidence matrix of graph, the corresponding DPP samples spanning trees of that graph
-    using LightGraphs
-    G = Grid([5, 5])
-    n = nv(G)
-    M = incidence_matrix(G; oriented=true)
-    Lr = LowRankEnsemble(float.(Matrix(M')))
-    set = collect(sample(Lr, n - 1))
-    T = SimpleGraphFromIterator(collect(edges(G))[set])
-    @test vertices(T) == vertices(G)
-    @test is_connected(T)
-    @test ne(T) == n - 1
+    #Test behaviour under stratified sampling
+    #Construct projection kernel so that DPP
+    #should sample exactly one item per stratum
+    idx = [1,1,2,2,3,3] #strata
+    nstrata = maximum(idx)
+    n = length(idx)
+    U = float.([idx[i] == j for i in 1:n,  j in 1:nstrata])
+    Lp = ProjectionEnsemble(U)
+    for _ in 1:100
+        ind = sample(Lp)
+        @test length(unique(idx[ind])) == nstrata
+    end
+
 end

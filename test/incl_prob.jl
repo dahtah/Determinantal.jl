@@ -1,5 +1,5 @@
 @testset "incl_prob" begin
-    Lr = LowRankEnsemble(randn(10, 4))
+    Lr = EllEnsemble(LowRank(randn(10, 4)))
     @test all(0 .<= inclusion_prob(Lr) .<= 1)
     rescale!(Lr, 3)
     @test all(0 .<= inclusion_prob(Lr) .<= 1)

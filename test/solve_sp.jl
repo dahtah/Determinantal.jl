@@ -6,7 +6,7 @@
         @test abs(f(α * ls) - k) < 1e-5
     end
     X = randn(3, 10)
-    L = FullRankEnsemble(gaussker(X, 0.5))
+    L = EllEnsemble(gaussker(ColVecs(X), 0.5))
     rescale!(L, 4)
     @test abs(f(L.α * L.λ) - 4) < 1e-5
     rescale!(L, 2)
