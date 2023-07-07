@@ -138,9 +138,9 @@ function sample_pdpp_ar(U,lvg)
     p0 = copy(lvg)
     al = setup_alias(p0)
     rng = MersenneTwister()
-    Q = zeros(Float64,m,m)
+    Q = zeros(eltype(U),m,m)
     inds = BitSet()
-    f = zeros(m)
+    f = zeros(eltype(U),m)
     max_attempts = 150*m
     for ind in 1:m
         accept = false
@@ -151,7 +151,7 @@ function sample_pdpp_ar(U,lvg)
             while (itm ∈ inds)
                 itm = sample_alias(rng,al)
             end
-            pp = p0[itm] - sum((Qv'*U[itm,:]).^2)
+            pp = p0[itm] - sum(abs2.(Qv'*U[itm,:]))
             if (rand() < pp/p0[itm])
                 accept = true
             else
