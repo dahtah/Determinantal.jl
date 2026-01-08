@@ -10,15 +10,27 @@ import Combinatorics.combinations
     ]
     for L in Ls
         pr = map((ind) -> exp(log_prob(L, ind)), combinations(1:nitems(L)))
-        @assert sum(pr) + exp(log_prob(L, [])) ≈ 1
+        @assert sum(pr)  ≈ 1
     end
     Ls = [EllEnsemble(gaussker(ColVecs(X))), EllEnsemble(LowRank(randn(n, 3)))]
     #Test invariance to rescaling
     for L in Ls
         rescale!(L, 2)
         pr = map((ind) -> exp(log_prob(L, ind)), combinations(1:nitems(L)))
-        @assert sum(pr) + exp(log_prob(L, [])) ≈ 1
+        @assert sum(pr)  ≈ 1
     end
+
+    #Test that we get correct expressions using the marginal representations
+    for L in Ls
+        M = MarginalDPP(L)
+        @assert nitems(L) == nitems(M)
+        prL = map((ind) -> exp(log_prob(L, ind)), combinations(1:nitems(L)))
+        prM = map((ind) -> exp(log_prob(M, ind)), combinations(1:nitems(L)))
+        @assert prL  ≈ prM
+    end
+
+
+    #Test k-DPPs
     for L in Ls
         for k in 1:maxrank(L)
             pr = map((ind) -> exp(log_prob(L, ind, k)), combinations(1:nitems(L), k))

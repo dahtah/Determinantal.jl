@@ -1,3 +1,5 @@
+using LinearAlgebra
+
 @testset "incl_prob" begin
     Lr = EllEnsemble(LowRank(randn(10, 4)))
     @test all(0 .<= inclusion_prob(Lr) .<= 1)

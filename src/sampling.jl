@@ -1,18 +1,33 @@
-using LoopVectorization,Random
+#NB: I'm deprecating the leverage score computation code
+#that uses LoopVectorization.jl, it adds many dependencies
+#and increases compile time, I don't think it's worth it.
+#using LoopVectorization,Random
+# function lvg_old(U)
+#     p = U[:,1].^2
+#     if (size(U,2) > 1)
+#         @turbo for j in 2:size(U,2)
+#             for i in 1:size(U,1)
+#                 p[i] += U[i,j]^2
+#             end
+#         end
+#     end
+#     p
+# end
+
+
+using Random
 
 function lvg(U)
     p = U[:,1].^2
     if (size(U,2) > 1)
-        @turbo for j in 2:size(U,2)
-            for i in 1:size(U,1)
+        @inbounds @simd  for j in axes(U,2)[2:end]
+            @simd for i in axes(U,1)
                 p[i] += U[i,j]^2
             end
         end
     end
     p
 end
-
-
 
 
 
@@ -59,7 +74,7 @@ function sample_pdpp(U::AbstractMatrix, lvg::AbstractVector)
         F[:, i] = f / sqrt(dot(v, f))
         mul!(tmp, U, @view F[:, i])
         ss = 0.0
-        @turbo for j in 1:n
+        @inbounds @simd  for j in 1:n
             s = p[j] - tmp[j]^2
             p[j] = (s > 0 ? s : 0)
             ss += p[j]

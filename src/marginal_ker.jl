@@ -31,6 +31,8 @@ Construct a DPP from a matrix defining the marginal kernel. Here the matrix must
 """
 MarginalDPP(V::AbstractMatrix{T}) where {T} = MarginalDPP{T}(V)
 
+
+
 function inclusion_prob(M::MarginalDPP)
     return diag(M.K)
 end
@@ -51,4 +53,26 @@ end
 function cardinal(M::MarginalDPP)
     p = M.λ
     return (mean=sum(p), std=sqrt(sum(p .* (1 .- p))))
+end
+
+#Compute the log-likelihood of an outcome
+#Implementation is not particularly efficient and has cubic cost.
+function log_prob(M::MarginalDPP,ind)
+    length(ind) > 0 && @assert all([i ∈ 1:nitems(M) for i in ind])
+    if length(ind) == 0
+        return sum(log.(1 .- M.λ))
+    elseif length(ind) == nitems(M)
+        return sum(log.(M.λ))
+    else
+        B = setdiff(1:nitems(M),ind)
+        A = ind
+        K = M.K
+        return logdet(K[A,A]) + logdet(I - (K[B,B] - K[B,A]*(K[A,A] \ K[A,B] )))
+    end
+end
+
+#Moment-generating function - mostly of theoretical interest
+function mgf(M::MarginalDPP,t :: Vector)
+    b = exp.(t) .- 1
+    det(I - Diagonal(B)*M)
 end

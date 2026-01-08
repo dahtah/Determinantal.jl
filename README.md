@@ -1,10 +1,15 @@
-[![Documentation (latest)](https://img.shields.io/badge/docs-dev-blue.svg)](https://dahtah.github.io/Determinantal.jl/dev)
+[![Stable Documentation](https://img.shields.io/badge/docs-stable-blue.svg)](https://dahtah.github.io/Determinantal.jl/stable)
+[![Development documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://dahtah.github.io/Determinantal.jl/dev)
+[![Test workflow status](https://github.com/dahtah/Determinantal.jl/actions/workflows/Test.yml/badge.svg?branch=main)](https://github.com/dahtah/Determinantal.jl/actions/workflows/Test.yml?query=branch%3Amain)
+[![Coverage](https://codecov.io/gh/dahtah/Determinantal.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/dahtah/Determinantal.jl)
+[![Docs workflow Status](https://github.com/dahtah/Determinantal.jl/actions/workflows/Docs.yml/badge.svg?branch=main)](https://github.com/dahtah/Determinantal.jl/actions/workflows/Docs.yml?query=branch%3Amain)
+[![BestieTemplate](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/JuliaBesties/BestieTemplate.jl/main/docs/src/assets/badge.json)](https://github.com/JuliaBesties/BestieTemplate.jl)
 
 # Determinantal.jl: Determinantal Point Processes in Julia
 
 Determinantal Point Processes are point processes with repulsion properties: define an appropriate function for representing similarity between items, and a DPP will sample a subset of "representative" items, i.e. ones that does not contain two items that are too similar.
 
-This package focuses on discrete DPPs. Continuous DPPs are not supported (yet). Discrete DPPs may be defined from (extended) L-ensembles, or marginal kernels. We provide a very fast implementation of the exact sampling algorithm described in Tremblay et al. (2018). We also provide some basic tools for low-rank kernel approximation.
+This package focuses on discrete DPPs. Continuous DPPs are not supported (yet). Discrete DPPs may be defined from (extended) L-ensembles, or marginal kernels. We provide a very fast implementation of the exact sampling algorithm described in Barthelmé et al. (2022). We also provide some basic tools for low-rank kernel approximation.
 
 ## Quick start
 
@@ -41,7 +46,7 @@ The code to reproduce the figures in Barthelmé et al. (2022) is included in the
 
 ## Authors
 
-Simon Barthelmé (Gipsa-lab, CNRS), Nicolas Tremblay (Gipsa-lab, CNRS), Guillaume Gautier (CRIStAL). 
+Simon Barthelmé (Gipsa-lab, CNRS), Nicolas Tremblay (Gipsa-lab, CNRS), Guillaume Gautier (CRIStAL).
 
 ## See also
 

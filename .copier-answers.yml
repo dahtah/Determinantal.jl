@@ -1,0 +1,41 @@
+# Changes here will be overwritten by Copier
+AddAllcontributors: false
+AddCitationCFF: false
+AddCodeOfConduct: false
+AddContributionDocs: false
+AddCopierCI: false
+AddDocs: true
+AddDocsCI: true
+AddFormatterAndLinterConfigFiles: true
+AddGitHubPRTemplate: false
+AddGitHubTemplates: false
+AddLintCI: false
+AddLychee: true
+AddMacToCI: false
+AddPrecommit: true
+AddPrecommitUpdateCI: false
+AddTagBotCI: true
+AddTestCI: true
+AddWinToCI: false
+Authors: Simon Barthelme <simon.barthelme@gipsa-lab.fr>,Nicolas Tremblay <nicolas.tremblay@gipsa-lab.fr>
+CheckExplicitImports: true
+ConfigIndentation: 2
+ExplicitImportsChecklist: exclude_all_qualified_accesses_are_public
+GitHubActionVersionAutoUpdate: dependabot
+JuliaCompatAutoUpdate: dependabot
+JuliaIndentation: 4
+JuliaMinCIVersion: '1.10'
+JuliaMinVersion: '1.6'
+License: nothing
+LicenseCopyrightHolders: Simon Barthelme, Nicolas Tremblay
+MarkdownIndentation: 2
+PackageName: Determinantal
+PackageOwner: dahtah
+PackageUUID: 2673d5e8-682c-11e9-2dfd-471b09c6c819
+RunJuliaNightlyOnCI: false
+StrategyConfirmIncluded: true
+StrategyLevel: 1
+StrategyReviewExcluded: true
+TestingStrategy: basic_auto_discover
+UseCirrusCI: false
+_src_path: /home/simon/.julia/packages/BestieTemplate/jBHga

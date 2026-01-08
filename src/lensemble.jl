@@ -105,7 +105,8 @@ function show(io::IO, e::ProjectionEnsemble)
     )
 end
 
-
+#Mostly for debugging purposes
+MarginalDPP(L::EllEnsemble) = MarginalDPP(Symmetric(marginal_kernel(L)))
 
 @doc raw"""
    ProjectionEnsemble(V::Matrix{T},orth=true)
@@ -178,7 +179,7 @@ Sample from a projection DPP. If nsamples > 1, return a vector of nsamples reali
  If n is much larger than m, this calls the optimised accept/reject sampler instead of the regular sampler. In addition, the leverage scores are precomputed if nsamples > 1.
 
  The optimised A/R sampler is described in
- Barthelme, S, Tremblay, N, Amblard, P-O, (2022)  A Faster Sampler for Discrete Determinantal Point Processes. 
+ Barthelme, S, Tremblay, N, Amblard, P-O, (2022)  A Faster Sampler for Discrete Determinantal Point Processes.
 
 ```@example
     Z = randn(150,10) #random feature matrix
@@ -188,7 +189,7 @@ Sample from a projection DPP. If nsamples > 1, return a vector of nsamples reali
 ```
 """
 function sample(L::ProjectionEnsemble;nsamples=1)
-    #use A/R alg? 
+    #use A/R alg?
     use_ar = (round(L.n / L.m) > 10) ? true : false
     if (nsamples > 1) #some improvements for repeated sampling
         lv = lvg(L.U)

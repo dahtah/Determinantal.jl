@@ -1,4 +1,5 @@
 name: TagBot
+
 on:
   issue_comment:
     types:
@@ -6,7 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       lookback:
+        type: number
         default: 3
+
 permissions:
   actions: read
   checks: read
@@ -20,6 +23,7 @@ permissions:
   repository-projects: read
   security-events: read
   statuses: read
+
 jobs:
   TagBot:
     if: github.event_name == 'workflow_dispatch' || github.actor == 'JuliaTagBot'
