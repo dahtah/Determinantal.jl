@@ -106,7 +106,20 @@ function show(io::IO, e::ProjectionEnsemble)
 end
 
 #Mostly for debugging purposes
-MarginalDPP(L::EllEnsemble) = MarginalDPP(Symmetric(marginal_kernel(L)))
+MarginalDPP(L::AbstractLEnsemble) = MarginalDPP(Symmetric(marginal_kernel(L)))
+
+function MarginalDPP(L::EllEnsemble)
+    p = L.α * L.λ ./ (1 .+ L.α * L.λ)
+    if isa(L.L,LowRank)
+        K = LowRank(L.U*Diagonal(sqrt.(p)))
+    else
+        K = L.U*Diagonal(p)*L.U'
+    end
+    MarginalDPP(K, L.U, p, L.n, length(p))
+end
+
+
+
 
 @doc raw"""
    ProjectionEnsemble(V::Matrix{T},orth=true)
@@ -116,6 +129,14 @@ Construct a projection ensemble from a matrix of features. Here we assume
 V needs not be orthogonal. If orth is set to true (default), then a QR decomposition is performed. If V is orthogonal already, then this computation may be skipped, and you can set orth to false.
 """
 ProjectionEnsemble(V::Matrix{T}, orth=true) where {T} = ProjectionEnsemble{T}(V, orth)
+
+
+function MarginalDPP(L::ProjectionEnsemble)
+    K = LowRank(L.U)
+    MarginalDPP(K, L.U, L.λ, L.n, length(L.λ))
+end
+
+
 
 @doc raw"""
    rescale!(L,k)

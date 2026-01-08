@@ -7,17 +7,20 @@ mutable struct MarginalDPP{T}
     n::Int64
     m::Int64
 
-    function MarginalDPP{T}(V::AbstractMatrix{T}) where {T}
-        K = V
-        @assert size(K, 1) == size(K, 2) "Kernel must be square"
-        eg = eigen(K)
-        U = eg.vectors
-        λ = max.(eg.values, eps(T))
-        @assert maximum(λ) <= 1.0 "Eigenvalues need to be less than or equal to 1"
-        n = size(K, 1)
-        return new(K, U, λ, n, length(λ))
-    end
 end
+
+function MarginalDPP(V::AbstractMatrix{T}) where {T}
+    K = V
+    @assert size(K, 1) == size(K, 2) "Kernel must be square"
+    eg = eigen(K)
+    U = eg.vectors
+    λ = max.(eg.values, eps(T))
+    @assert maximum(λ) <= 1.0 "Eigenvalues need to be less than or equal to 1"
+    n = size(K, 1)
+    return MarginalDPP{T}(K, U, λ, n, length(λ))
+end
+
+
 
 function show(io::IO, e::MarginalDPP)
     println(io, "DPP with marginal kernel representation.")
@@ -61,13 +64,20 @@ function log_prob(M::MarginalDPP,ind)
     length(ind) > 0 && @assert all([i ∈ 1:nitems(M) for i in ind])
     if length(ind) == 0
         return sum(log.(1 .- M.λ))
+    elseif length(ind) > M.m
+        return -Inf
     elseif length(ind) == nitems(M)
         return sum(log.(M.λ))
     else
         B = setdiff(1:nitems(M),ind)
         A = ind
         K = M.K
-        return logdet(K[A,A]) + logdet(I - (K[B,B] - K[B,A]*(K[A,A] \ K[A,B] )))
+        C = cholesky(K[A, A],check=false)
+        !issuccess(C) && return -Inf
+        S = Symmetric(I - (K[B,B] - K[B,A]*(C \ K[A,B] )))
+        CS = cholesky(S,check=false)
+        !issuccess(CS) && return -Inf
+        return logdet(C) + logdet(CS)
     end
 end
 
