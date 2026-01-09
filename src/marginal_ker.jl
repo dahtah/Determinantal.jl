@@ -83,7 +83,7 @@ end
 #Moment-generating function - mostly of theoretical interest
 
 
-"""
+raw"""
     mgf(DPP, t)
 
 Compute the moment generating function of a DPP evaluated at $t$, defined as
