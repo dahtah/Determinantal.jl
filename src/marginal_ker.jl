@@ -81,7 +81,29 @@ function log_prob(M::MarginalDPP,ind)
 end
 
 #Moment-generating function - mostly of theoretical interest
-function mgf(M::MarginalDPP,t :: Vector)
-    b = exp.(t) .- 1
-    det(I - Diagonal(b)*M)
+
+
+"""
+    mgf(DPP, t)
+
+Compute the moment generating function of a DPP evaluated at $t$, defined as
+$ m(\mathbf{t}) = \mathrm{E}\left( \exp( \mathbf{t}^\top \mathbf{z}) \right) $
+where $\mathbf{z}$ is the indicator vector of the DPP ($z_i=1$ if item $i$ is included, $0$ otherwise).
+If $t$ is a scalar, then:
+$ m(t) = \mathrm{E}\left( \exp( t \sum z_i \right) $
+
+# Arguments
+- `DPP`: A DPP (either an L-ensemble, a projection DPP, or a marginal DPP)
+- `t`: Either a vector of length equal to the number of items in `M`, or a scalar
+
+"""
+function mgf(M::MarginalDPP, t::Vector)
+    @assert length(t) == nitems(M)
+    b = 1 .- exp.(t)
+    det(I - Diagonal(b) * M.K)
+end
+
+function mgf(M::MarginalDPP,t :: Number)
+    b = 1-exp(t)
+    prod( 1 .- b * M.λ )
 end

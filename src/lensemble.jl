@@ -325,6 +325,26 @@ function logz(L::ProjectionEnsemble)
     return 0
 end
 
+function mgf(L::EllEnsemble,t::Vector)
+    D=Diagonal(exp.(t / 2))
+    return det(Symmetric(I+L.α*D*L.L*D))/prod(1 .+ L.α*L.λ)
+end
+
+function mgf(L::EllEnsemble,t::Number)
+    return prod(1 .+ L.α*exp(t)*L.λ)/prod(1 .+ L.α*L.λ)
+end
+
+
+function mgf(L::ProjectionEnsemble,t::Number)
+    return exp(t*L.m)
+end
+
+function mgf(L::ProjectionEnsemble,t::Vector)
+    return prod(svd(Diagonal(exp.(.5*t))*L.U).S)^2
+end
+
+
+
 for type in [:ProjectionEnsemble, :EllEnsemble, :MarginalDPP]
     eval(:(nitems(L::$type) = L.n))
 end
