@@ -6,9 +6,13 @@ mutable struct MarginalDPP{T}
     λ::Vector{T}
     n::Int64
     m::Int64
-
 end
 
+"""
+MarginalDPP(V::Matrix{T})
+
+Construct a DPP from a matrix defining the marginal kernel. Here the matrix must be square and its eigenvalues must be between 0 and 1.
+"""
 function MarginalDPP(V::AbstractMatrix{T}) where {T}
     K = V
     @assert size(K, 1) == size(K, 2) "Kernel must be square"
@@ -27,12 +31,7 @@ function show(io::IO, e::MarginalDPP)
     return println(io, "Number of items in ground set : $(nitems(e)).")
 end
 
-"""
-MarginalDPP(V::Matrix{T})
-
-Construct a DPP from a matrix defining the marginal kernel. Here the matrix must be square and its eigenvalues must be between 0 and 1.
-"""
-MarginalDPP(V::AbstractMatrix{T}) where {T} = MarginalDPP{T}(V)
+#MarginalDPP(V::AbstractMatrix{T}) where {T} = MarginalDPP{T}(V)
 
 
 
@@ -72,7 +71,7 @@ function log_prob(M::MarginalDPP,ind)
         B = setdiff(1:nitems(M),ind)
         A = ind
         K = M.K
-        C = cholesky(K[A, A],check=false)
+        C = cholesky(Symmetric(K[A, A]),check=false)
         !issuccess(C) && return -Inf
         S = Symmetric(I - (K[B,B] - K[B,A]*(C \ K[A,B] )))
         CS = cholesky(S,check=false)
@@ -84,5 +83,5 @@ end
 #Moment-generating function - mostly of theoretical interest
 function mgf(M::MarginalDPP,t :: Vector)
     b = exp.(t) .- 1
-    det(I - Diagonal(B)*M)
+    det(I - Diagonal(b)*M)
 end
