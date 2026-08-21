@@ -34,6 +34,11 @@ end
 #MarginalDPP(V::AbstractMatrix{T}) where {T} = MarginalDPP{T}(V)
 
 
+#The void probability is the probability that none of the items in ind
+#are selected.
+function void_prob(M::MarginalDPP,ind)
+    det(I - M.K[ind,ind])
+end
 
 function inclusion_prob(M::MarginalDPP)
     return diag(M.K)

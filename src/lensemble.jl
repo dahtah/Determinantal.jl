@@ -178,6 +178,32 @@ function inclusion_prob(L::ProjectionEnsemble)
 end
 
 """
+     void_prob(L,ind)
+
+Compute the probability that none of the items in ind are sampled for a DPP defined by L. Here L can have type LEnsemble, MarginalDPP or ProjectionEnsemble.
+
+```jldoctest
+K=MarginalDPP(diagm([.3,.4,.5]))
+void_prob(K,1:2) #Prob. that neither 1 nor 2 are selected
+
+# result
+0.42 #equal to (1-.3)*(1-.4)
+```
+
+"""
+function void_prob(L::AbstractLEnsemble,ind)
+    val = L.α * L.λ ./ (1 .+ L.α * L.λ)
+    C = L.U[ind,:]* Diagonal(sqrt.(val))
+    return det(I-C'*C)
+end
+
+function void_prob(L::ProjectionEnsemble,ind)
+    A=@view L.U[ind,:]
+    return det(I-A'*A)
+end
+
+
+"""
      marginal_kernel(L::AbstractLEnsemble)
 
 Compute and return the marginal kernel of a DPP, K. The marginal kernel of a DPP is a (n x n) matrix which can be used to find the inclusion probabilities. For any fixed set of indices ind, the probability that ind is included in a sample from the DPP equals det(K[ind,ind]).
