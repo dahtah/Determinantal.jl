@@ -183,11 +183,12 @@ end
 Compute the probability that none of the items in ind are sampled for a DPP defined by L. Here L can have type LEnsemble, MarginalDPP or ProjectionEnsemble.
 
 ```jldoctest
+using LinearAlgebra
 K=MarginalDPP(diagm([.3,.4,.5]))
 void_prob(K,1:2) #Prob. that neither 1 nor 2 are selected
-
-# result
-0.42 #equal to (1-.3)*(1-.4)
+# This should equal (1-.3)*(1-.4) = 0.7*0.6 = 0.42
+# output
+0.42
 ```
 
 """

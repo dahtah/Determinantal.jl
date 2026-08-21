@@ -1,5 +1,7 @@
-using Determinantal
-using Documenter
+using Determinantal,LinearAlgebra
+using Documenter,DocumenterCitations
+bib = CitationBibliography("biblio.bib")
+
 
 DocMeta.setdocmeta!(Determinantal, :DocTestSetup, :(using Determinantal); recursive = true)
 
@@ -62,6 +64,7 @@ makedocs(;
     modules = [Determinantal],
     authors = "Simon Barthelme <simon.barthelme@gipsa-lab.fr>,Nicolas Tremblay <nicolas.tremblay@gipsa-lab.fr>",
     repo = "https://github.com/dahtah/Determinantal.jl/blob/{commit}{path}#{line}",
+         plugins=[bib],
     sitename = "Determinantal.jl",
     format = Documenter.HTML(; canonical = "https://dahtah.github.io/Determinantal.jl"),
     pages = list_pages(),
