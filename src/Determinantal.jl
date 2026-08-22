@@ -1,5 +1,6 @@
 module Determinantal
 using LinearAlgebra, StatsBase, Combinatorics, Distances, KernelFunctions
+using NLsolve
 import Base.show, Base.getindex, LinearAlgebra.diag
 export LowRank,
     nitems,
@@ -36,6 +37,8 @@ include("kdpp.jl")
 include("saddlepoint.jl")
 include("features.jl")
 include("sampling.jl")
+include("match_prob.jl")
+
 include("greedy.jl")
 include("ppensembles.jl")
 include("kldiv.jl")

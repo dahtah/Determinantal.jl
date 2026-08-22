@@ -1,6 +1,6 @@
 using Determinantal,LinearAlgebra
 using Documenter,DocumenterCitations
-bib = CitationBibliography("biblio.bib")
+bib = CitationBibliography(joinpath(@__DIR__, "biblio.bib"))
 
 
 DocMeta.setdocmeta!(Determinantal, :DocTestSetup, :(using Determinantal); recursive = true)
@@ -66,7 +66,27 @@ makedocs(;
     repo = "https://github.com/dahtah/Determinantal.jl/blob/{commit}{path}#{line}",
          plugins=[bib],
     sitename = "Determinantal.jl",
-    format = Documenter.HTML(; canonical = "https://dahtah.github.io/Determinantal.jl"),
+    format = Documenter.HTML(;
+        canonical = "https://dahtah.github.io/Determinantal.jl",
+        mathengine = MathJax(
+            Dict(
+                :TeX => Dict(
+                    :equationNumbers => Dict(:autoNumber => "AMS"),
+                    :Macros => Dict(
+                        :X => ["\\mathcal{X}", 0],
+                        :bK => ["\\mathbf{K}", 0],
+                        :bL => ["\\mathbf{L}", 0],
+                        :bM => ["\\mathbf{M}", 0],
+                        :bV => ["\\mathbf{V}", 0],
+                        :O => ["\\mathcal{O}", 0],
+                        :defd => "≝",
+                        :ket => ["|#1\\rangle", 1],
+                        :bra => ["\\langle#1|", 1],
+                    ),
+                ),
+            ),
+        ),
+    ),
     pages = list_pages(),
 )
 

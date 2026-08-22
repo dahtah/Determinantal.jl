@@ -119,6 +119,18 @@ function MarginalDPP(L::EllEnsemble)
 end
 
 
+function EllEnsemble(M::MarginalDPP)
+    cond = all(0 .< M.λ .< 1)
+    @assert cond "All eigenvalues must be positive and < 1"
+    l = M.λ ./ (1 .- M.λ)
+    if isa(M.K,LowRank)
+        L = LowRank(M.U*Diagonal(sqrt.(l)))
+    else
+        L = M.U*Diagonal(l)*M.U'
+    end
+    EllEnsemble(L)
+end
+
 
 
 @doc raw"""
