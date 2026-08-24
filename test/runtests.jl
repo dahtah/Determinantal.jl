@@ -1,6 +1,10 @@
 using Determinantal
 using Test
 
+import CompatHelperLocal as CHL
+CHL.@check()
+
+
 #=
 Don't add your tests to runtests.jl. Instead, create files named
 
