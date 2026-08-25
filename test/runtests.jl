@@ -1,6 +1,7 @@
 using Determinantal
 using Test
 using Aqua
+using Statistics,LinearAlgebra
 
 Aqua.test_all(Determinantal)
 import CompatHelperLocal as CHL

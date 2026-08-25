@@ -11,19 +11,24 @@ end
 """
 MarginalDPP(V::Matrix{T})
 
-Construct a DPP from a matrix defining the marginal kernel. Here the matrix must be square and its eigenvalues must be between 0 and 1.
+Construct a DPP from a matrix defining the marginal kernel. Here the matrix must be square and its eigenvalues must be between 0 and 1. All eigenvalues above 1 will be clipped and a warning issued.
+
+
 """
 function MarginalDPP(V::AbstractMatrix{T}) where {T}
     K = V
     @assert size(K, 1) == size(K, 2) "Kernel must be square"
     eg = eigen(K)
     U = eg.vectors
+
     λ = max.(eg.values, eps(T))
-    @assert maximum(λ) <= 1.0 "Eigenvalues need to be less than or equal to 1"
+    if maximum(λ) > 1.0
+        @warn "Clipping eigenvalues > 1 to 1"
+        λ[λ .> 1] .= 1.0
+    end
     n = size(K, 1)
     return MarginalDPP{T}(K, U, λ, n, length(λ))
 end
-
 
 
 function show(io::IO, e::MarginalDPP)

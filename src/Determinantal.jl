@@ -28,7 +28,8 @@ export LowRank,
     ColVecs,
     LazyDist,
     distance_sampling,
-    nystrom_approx
+    nystrom_approx,
+    match_prob
 
 include("lowrank.jl")
 include("marginal_ker.jl")
@@ -42,7 +43,7 @@ include("match_prob.jl")
 include("greedy.jl")
 include("ppensembles.jl")
 include("kldiv.jl")
-include("nystrom.jl")
+#include("nystrom.jl")
 include("other.jl")
 #include("pivotal_sampling.jl")
 end # module

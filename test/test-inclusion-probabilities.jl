@@ -42,3 +42,13 @@ end
         @assert Determinantal.mgf(M,t)  ≈ Determinantal.mgf(L,t)
     end
 end
+
+#Test that the void probabilities are correct
+@testset "voidprob" begin
+    @test void_prob(MarginalDPP(Diagonal([1.,0.,1.])),[1,3]) ≈ 0.0
+    @test void_prob(MarginalDPP(Diagonal([.2,.4,.3])),[1,3]) ≈ (.8*.7)
+    L=EllEnsemble(LowRank(randn(5,2)))
+    ii = [4,2]
+    vp=void_prob(L,ii)
+    @assert void_prob(MarginalDPP(L),ii) ≈ vp
+end

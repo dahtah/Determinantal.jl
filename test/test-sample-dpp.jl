@@ -19,4 +19,8 @@
         @test length(unique(idx[ind])) == nstrata
     end
 
+    #Some cases should lead to deterministic samples, check that
+    ind=sample(MarginalDPP(Diagonal([1.,0.,1.])))
+    @test sort(ind) == [1,3]
+
 end
