@@ -142,7 +142,7 @@ function nystrom_approx(x::AbstractVector, ker::Kernel, m::Integer)
     return nystrom_approx(x, ker, ind)
 end
 
-function nystrom_approx(K::Matrix, ind)
+function nystrom_approx(K::AbstractMatrix, ind :: AbstractVector)
     Kaa = K[ind, ind]
     U = cholesky(Kaa).L
     #K[:,ind] * inv(U')

@@ -1,6 +1,8 @@
 using Determinantal
 using Test
+using Aqua
 
+Aqua.test_all(Determinantal)
 import CompatHelperLocal as CHL
 CHL.@check()
 
