@@ -93,3 +93,23 @@ function iesample(L::EllEnsemble)
     end
     incl
 end
+
+
+function condition_on(K :: MarginalDPP,incl=Int[],excl=Int[])
+    @assert length(intersect(incl,excl)) == 0
+    ie = [incl;excl]
+    rem = setdiff(1:nitems(K),ie)
+    Kn = copy(K.K)
+    for i in incl
+        Kn[i,i] = 1.0
+    end
+    for i in excl
+        Kn[i,i] -= 1.0
+    end
+    Kn[rem,rem] .-= Kn[rem,ie]*(Kn[ie,ie] \ Kn[ie,rem])
+    for i in excl
+        Kn[i,i] = 0
+    end
+
+    MarginalDPP(Kn)
+end

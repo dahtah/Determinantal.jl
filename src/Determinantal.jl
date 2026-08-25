@@ -39,6 +39,7 @@ include("saddlepoint.jl")
 include("features.jl")
 include("sampling.jl")
 include("match_prob.jl")
+include("conditioning.jl")
 
 include("greedy.jl")
 include("ppensembles.jl")
