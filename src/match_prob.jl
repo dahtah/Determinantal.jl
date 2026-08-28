@@ -6,6 +6,9 @@ the inclusion probabilities match the given target probabilities `pr`.
 
 This simply sets a diagonal matrix ``D`` such that ``(DKD)_{i,i} = \pi_i``. The function returns a DPP with kernel ``DKD``.
 
+Note that the problem does not necessarily have an exact solution! It may be the case that $DKD$ has eigenvalues larger than 1, in which case the large eigenvalues will be truncated, and the inclusion probabilities cannot be matched exactly.
+An exact solution is guaranteed if each target probability $pi_i$ is less than or equal to the original inclusion probability. Then the modified DPP corresponds to a thinning of the original DPP: each item is retained with probability equal to the ratio of the target and original inclusion property.
+
 ```@example ex1
 K=MarginalDPP(Diagonal([.5,.5,.5]))
 inclusion_prob(match_prob(K,[.6,.7,.8]))

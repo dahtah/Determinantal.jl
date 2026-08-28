@@ -194,13 +194,10 @@ end
 
 Compute the probability that none of the items in ind are sampled for a DPP defined by L. Here L can have type LEnsemble, MarginalDPP or ProjectionEnsemble.
 
-```jldoctest
-using LinearAlgebra
-K=MarginalDPP(diagm([.3,.4,.5]))
+```@example ex1
+K=MarginalDPP(Diagonal([.3,.4,.5]))
 void_prob(K,1:2) #Prob. that neither 1 nor 2 are selected
 # This should equal (1-.3)*(1-.4) = 0.7*0.6 = 0.42
-# output
-0.42
 ```
 
 """
@@ -283,11 +280,11 @@ function sample(L::AbstractLEnsemble)
 end
 
 """
-    cardinal(L::AbstractLEnsemble)
+    size_statistics(L::AbstractLEnsemble)
 
 The size of the set sampled by a DPP is a random variable. This function returns its mean and standard deviation. See also: rescale!, which changes the mean set size.
 """
-function cardinal(L::AbstractLEnsemble)
+function size_statistics(L::AbstractLEnsemble)
     p = L.α * L.λ ./ (1 .+ L.α * L.λ)
     return (mean=sum(p), std=sqrt(sum(p .* (1 .- p))))
 end

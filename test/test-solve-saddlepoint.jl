@@ -10,5 +10,5 @@
     rescale!(L, 4)
     @test abs(f(L.α * L.λ) - 4) < 1e-5
     rescale!(L, 2)
-    @test abs(cardinal(L)[1] - 2) < 1e-5
+    @test abs(size_statistics(L)[1] - 2) < 1e-5
 end

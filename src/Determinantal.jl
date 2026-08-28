@@ -19,7 +19,7 @@ export LowRank,
     rff,
     inclusion_prob,
     void_prob,
-    cardinal,
+    size_statistics,
     greedy_subset,
     esp,
     kl_divergence,
@@ -29,7 +29,8 @@ export LowRank,
     LazyDist,
     distance_sampling,
     nystrom_approx,
-    match_prob
+    match_prob,
+    condition_on
 
 include("lowrank.jl")
 include("marginal_ker.jl")

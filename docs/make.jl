@@ -1,70 +1,40 @@
-using Determinantal,LinearAlgebra
-using Documenter,DocumenterCitations
+using Determinantal, LinearAlgebra
+using Documenter, DocumenterCitations
+using Documenter.Remotes: GitHub
+using Literate
+using Pkg
+
 bib = CitationBibliography(joinpath(@__DIR__, "biblio.bib"))
+const NOTEBOOKS_SRC_DIR = joinpath(@__DIR__, "src", "notebooks")
 
-
-DocMeta.setdocmeta!(Determinantal, :DocTestSetup, :(using Determinantal); recursive = true)
-
-# Add titles of sections and overrides page titles
-const titles = Dict(
-    # "10-tutorials" => "Tutorials", # example folder title
-    "91-developer.md" => "Developer docs",
-)
-
-function recursively_list_pages(folder; path_prefix="")
-    pages_list = Any[]
-    for file in readdir(folder)
-        if file == "index.md"
-            # We add index.md separately to make sure it is the first in the list
-            continue
-        end
-        # this is the relative path according to our prefix, not @__DIR__, i.e., relative to `src`
-        relpath = joinpath(path_prefix, file)
-        # full path of the file
-        fullpath = joinpath(folder, relpath)
-
-        if isdir(fullpath)
-            # If this is a folder, enter the recursion case
-            subsection = recursively_list_pages(fullpath; path_prefix=relpath)
-
-            # Ignore empty folders
-            if length(subsection) > 0
-                title = if haskey(titles, relpath)
-                titles[relpath]
-                else
-                @error "Bad usage: '$relpath' does not have a title set. Fix in 'docs/make.jl'"
-                relpath
-                end
-                push!(pages_list, title => subsection)
-            end
-
-            continue
-        end
-
-        if splitext(file)[2] != ".md" # non .md files are ignored
-            continue
-        elseif haskey(titles, relpath) # case 'title => path'
-            push!(pages_list, titles[relpath] => relpath)
-        else # case 'title'
-            push!(pages_list, relpath)
+# Convert Literate.jl notebooks to markdown
+function generate_notebooks()
+    notebooks = ["recommendation"]
+    cur_dir = pwd()
+    for nb in notebooks
+        nb_path = joinpath(NOTEBOOKS_SRC_DIR, nb)
+        if isdir(nb_path)
+            cd(nb_path)
+            Pkg.activate(".")
+            Pkg.instantiate()
+            fl = "$(nb).jl"
+            Literate.markdown(fl; documenter=true, execute=true)
+            cd(cur_dir)
+            Pkg.activate(".")
+        else
+            @warn "Notebook source file not found: $(nb_path)"
         end
     end
-
-    return pages_list
 end
 
-function list_pages()
-    root_dir = joinpath(@__DIR__, "src")
-    pages_list = recursively_list_pages(root_dir)
-
-    return ["index.md"; pages_list]
-end
+# Generate notebooks before makedocs
+generate_notebooks()
 
 makedocs(;
     modules = [Determinantal],
     authors = "Simon Barthelme <simon.barthelme@gipsa-lab.fr>,Nicolas Tremblay <nicolas.tremblay@gipsa-lab.fr>",
-    repo = "https://github.com/dahtah/Determinantal.jl/blob/{commit}{path}#{line}",
-         plugins=[bib],
+    repo = GitHub("dahtah/Determinantal.jl"),
+    plugins = [bib],
     sitename = "Determinantal.jl",
     format = Documenter.HTML(;
         canonical = "https://dahtah.github.io/Determinantal.jl",
@@ -87,7 +57,15 @@ makedocs(;
             ),
         ),
     ),
-    pages = list_pages(),
-)
+    pages = [
+        "Basic usage" => "index.md"
+        "Reference" => "reference.md"
+        "Examples" =>
+            [   "Building a recommender system" => "notebooks/recommendation/recommendation.md"]
+    ])
 
-deploydocs(; repo = "github.com/dahtah/Determinantal.jl")
+
+
+deploydocs(;
+    repo = "github.com/dahtah/Determinantal.jl",
+    devbranch = "main")

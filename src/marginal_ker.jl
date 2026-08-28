@@ -25,6 +25,11 @@ function MarginalDPP(V::AbstractMatrix{T}) where {T}
     if maximum(λ) > 1.0
         @warn "Clipping eigenvalues > 1 to 1"
         λ[λ .> 1] .= 1.0
+        if isa(K,LowRank)
+            K.A .=U*Diagonal(sqrt.(λ))
+        else
+            K .= Symmetric(U*Diagonal(λ)*U')
+        end
     end
     n = size(K, 1)
     return MarginalDPP{T}(K, U, λ, n, length(λ))
@@ -62,29 +67,44 @@ function sample(M::MarginalDPP)
     end
 end
 
-function cardinal(M::MarginalDPP)
+function size_statistics(M::MarginalDPP)
     p = M.λ
     return (mean=sum(p), std=sqrt(sum(p .* (1 .- p))))
 end
 
-#Compute the log-likelihood of an outcome
-#Implementation is not particularly efficient and has cubic cost.
-function log_prob(M::MarginalDPP,ind)
-    length(ind) > 0 && @assert all([i ∈ 1:nitems(M) for i in ind])
+@doc raw"""
+    log_prob(M::MarginalDPP, ind)
+
+Compute the log-likelihood of a subset `ind` under the marginal DPP `M`, i.e.
+$\log p(\X = ind)$, where $\X$ is the DPP with marginal kernel L.
+
+# Arguments
+- `M::MarginalDPP`: A marginal Determinantal Point Process.
+- `ind`: A subset of item indices (1-based) to evaluate.
+
+# Returns
+- The log-probability of the subset `ind` under `M`. Returns `-Inf` for invalid subsets.
+
+# Notes
+- The implementation has cubic cost in the size of `ind`.
+- Returns `-Inf` if `ind` is larger than `M.m` or if the Cholesky decomposition fails.
+"""
+function log_prob(M::MarginalDPP, ind)
+    length(ind) > 0 && @assert all(0 .< ind .<= nitems(M))
     if length(ind) == 0
         return sum(log.(1 .- M.λ))
-    elseif length(ind) > M.m
+    elseif length(ind) > maxrank(M)
         return -Inf
     elseif length(ind) == nitems(M)
         return sum(log.(M.λ))
     else
-        B = setdiff(1:nitems(M),ind)
+        B = setdiff(1:nitems(M), ind)
         A = ind
         K = M.K
-        C = cholesky(Symmetric(K[A, A]),check=false)
+        C = cholesky(Symmetric(K[A, A]), check=false)
         !issuccess(C) && return -Inf
-        S = Symmetric(I - (K[B,B] - K[B,A]*(C \ K[A,B] )))
-        CS = cholesky(S,check=false)
+        S = Symmetric(I - (K[B, B] - K[B, A] * (C \ K[A, B])))
+        CS = cholesky(S, check=false)
         !issuccess(CS) && return -Inf
         return logdet(C) + logdet(CS)
     end
