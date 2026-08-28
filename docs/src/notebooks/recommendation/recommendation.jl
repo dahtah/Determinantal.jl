@@ -11,7 +11,7 @@ We use an old dataset called the Jester dataset (Goldberg et al., 2001), availab
 using Plots,Statistics,LinearAlgebra,JLD2
 
 ##Load the dataset
-@load "jester_data.jld2" jester_ratings jester_jokes;
+@load "recommendation/jester_data.jld2" jester_ratings jester_jokes;
 
 #=
 
@@ -57,7 +57,7 @@ Then the model $g$ is trained such that its output $g(t)$ is more similar to $g(
 We are going to exploit this by using the model output as a vector representation of each joke (a feature vector)
 =#
 
-@load "jester_data.jld2" jester_embeddings;
+@load "recommendation/jester_data.jld2" jester_embeddings;
 
 #=
 The matrix of embeddings is a 100x384 matrix, where each row is a vector of features corresponding to a joke. Let's see if the embeddings are sensible. We're going to find the most similar jokes to joke 16, according to our embeddings

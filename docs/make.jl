@@ -18,7 +18,7 @@ function generate_notebooks()
             Pkg.activate(".")
             Pkg.instantiate()
             fl = "$(nb).jl"
-            Literate.markdown(fl; documenter=true, execute=true)
+            Literate.markdown(fl, NOTEBOOKS_SRC_DIR; documenter=true, execute=true)
             cd(cur_dir)
             Pkg.activate(".")
         else
@@ -61,7 +61,7 @@ makedocs(;
         "Basic usage" => "index.md"
         "Reference" => "reference.md"
         "Examples" =>
-            [   "Building a recommender system" => "notebooks/recommendation/recommendation.md"]
+            [   "Building a recommender system" => "notebooks/recommendation.md"]
     ])
 
 
