@@ -1,7 +1,34 @@
 module Determinantal
-using LinearAlgebra, StatsBase, Combinatorics, Distances, KernelFunctions
-using NLsolve
-import Base.show, Base.getindex, LinearAlgebra.diag
+import Combinatorics
+import Distances
+import Distances: Euclidean
+import KernelFunctions
+import KernelFunctions:
+    ColVecs, Kernel, RowVecs, SqExponentialKernel, kernelmatrix, with_lengthscale
+import LinearAlgebra
+import LinearAlgebra:
+    Diagonal,
+    I,
+    Symmetric,
+    cholesky,
+    det,
+    diag,
+    dot,
+    eigen,
+    issuccess,
+    logabsdet,
+    logdet,
+    mul!,
+    norm,
+    qr,
+    svd
+import NLsolve
+import NLsolve: nlsolve
+import Random
+import Random: AbstractRNG, default_rng
+import StatsBase
+import StatsBase: Weights
+import Base: getindex, show
 export LowRank,
     nitems,
     maxrank,

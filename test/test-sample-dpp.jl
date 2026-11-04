@@ -9,18 +9,18 @@
     #Test behaviour under stratified sampling
     #Construct projection kernel so that DPP
     #should sample exactly one item per stratum
-    idx = [1,1,2,2,3,3] #strata
+    idx = [1, 1, 2, 2, 3, 3] #strata
     nstrata = maximum(idx)
     n = length(idx)
-    U = float.([idx[i] == j for i in 1:n,  j in 1:nstrata])
+    U = float.([idx[i] == j for i = 1:n, j = 1:nstrata])
     Lp = ProjectionEnsemble(U)
-    for _ in 1:100
+    for _ = 1:100
         ind = sample(Lp)
         @test length(unique(idx[ind])) == nstrata
     end
 
     #Some cases should lead to deterministic samples, check that
-    ind=sample(MarginalDPP(Diagonal([1.,0.,1.])))
-    @test sort(ind) == [1,3]
+    ind=sample(MarginalDPP(Diagonal([1.0, 0.0, 1.0])))
+    @test sort(ind) == [1, 3]
 
 end

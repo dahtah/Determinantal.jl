@@ -1,11 +1,17 @@
 using Determinantal
 using Test
 using Aqua
-using Statistics,LinearAlgebra
+using JET
+using Statistics, LinearAlgebra
 
 Aqua.test_all(Determinantal)
 import CompatHelperLocal as CHL
 CHL.@check()
+
+@testset "JET static analysis" begin
+    include(joinpath(@__DIR__, "..", "src", "workload.jl"))
+    JET.test_call(exercise_determinantal)
+end
 
 
 #=

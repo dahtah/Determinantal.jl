@@ -54,13 +54,13 @@ ind = distance_sampling(ColVecs(x), 40, :farthest)
 scatter(x[1, :], x[2, :]; marker_z=map((v) -> v ∈ ind, 1:size(x, 2)), legend=:none)
 ```
 """
-function distance_sampling(x::AbstractVector, m, sampling=:d2)
+function distance_sampling(x::AbstractVector, m, sampling = :d2)
     return distance_sampling(LazyDist(x), m, sampling)
 end
 
 function distance_sampling(D::AbstractMatrix, m, sampling::Union{Symbol,Function})
     @assert size(D, 1) == size(D, 2)
-    @assert m <= size(D,1)
+    @assert m <= size(D, 1)
     if (isa(sampling, Symbol))
         @assert sampling ∈ [:d2, :farthest]
     end
@@ -89,9 +89,9 @@ function distance_sampling(D::AbstractMatrix, m, sampling::Union{Symbol,Function
     return collect(ind)
 end
 
-function bernoulli_process(p, nrep=1)
+function bernoulli_process(p, nrep = 1)
     if (nrep > 1)
-        [findall(rand(length(p)) .<= p) for _ in 1:nrep]
+        [findall(rand(length(p)) .<= p) for _ = 1:nrep]
     else
         findall(rand(length(p)) .<= p)
     end

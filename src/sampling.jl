@@ -15,14 +15,13 @@
 # end
 
 
-using Random
 
 function lvg(U)
-    p = U[:,1].^2
-    if (size(U,2) > 1)
-        @inbounds @simd  for j in axes(U,2)[2:end]
-            @simd for i in axes(U,1)
-                p[i] += U[i,j]^2
+    p = U[:, 1] .^ 2
+    if (size(U, 2) > 1)
+        @inbounds @simd for j in axes(U, 2)[2:end]
+            @simd for i in axes(U, 1)
+                p[i] += U[i, j]^2
             end
         end
     end
@@ -58,7 +57,7 @@ function sample_pdpp(U::AbstractMatrix, lvg::AbstractVector)
     tmp = zeros(n)
     inds = BitSet()
     ss = sum(lvg)
-    @inbounds for i in 1:m
+    @inbounds for i = 1:m
         itm = wsample(p, ss)
         push!(inds, itm)
         #v = vec(Matrix(U[itm,:]))
@@ -68,13 +67,13 @@ function sample_pdpp(U::AbstractMatrix, lvg::AbstractVector)
         if i == 1
             copyto!(f, v)
         else
-            Fv = @view F[:, 1:(i - 1)]
+            Fv = @view F[:, 1:(i-1)]
             copyto!(f, v - Fv * (Fv' * v))
         end
         F[:, i] = f / sqrt(dot(v, f))
         mul!(tmp, U, @view F[:, i])
         ss = 0.0
-        @inbounds @simd  for j in 1:n
+        @inbounds @simd for j = 1:n
             s = p[j] - tmp[j]^2
             p[j] = (s > 0 ? s : 0)
             ss += p[j]
@@ -88,100 +87,102 @@ function sample_pdpp(U::AbstractMatrix, lvg::AbstractVector)
 end
 
 
-function sample_pdpp_mixed(U;cutoff=2*size(U,2))
+function sample_pdpp_mixed(U; cutoff = 2*size(U, 2))
     lv = lvg(U)
-    perm = sortperm(lv,rev=true)
-    cutoff = min(cutoff,size(U,1))
-    indp = sample_pdpp_mixed(U[perm,:],lv[perm],cutoff)
+    perm = sortperm(lv, rev = true)
+    cutoff = min(cutoff, size(U, 1))
+    indp = sample_pdpp_mixed(U[perm, :], lv[perm], cutoff)
     perm[indp]
 end
 
 
 #assume items are sorted by lvg score! 
-function sample_pdpp_mixed(U,lv,cutoff)
-    n = size(U,1)
-    m = size(U,2)
+function sample_pdpp_mixed(U, lv, cutoff)
+    n = size(U, 1)
+    m = size(U, 2)
     c = cutoff
     p0 = lv
     pc = p0[1:c]
-    al = setup_alias(p0[c+1:end])
-    rng = MersenneTwister()
-    Q = zeros(Float64,m,m)
+    al = setup_alias(p0[(c+1):end])
+    rng = default_rng()
+    Q = zeros(Float64, m, m)
     inds = BitSet()
-    for ind in 1:m
+    for ind = 1:m
         wc = sum(pc)
         rat = (wc)/(m-(ind-1))
         if (rand() < rat) #sample below
-            itm = wsample(pc,wc)
-#            @info "Below!"
+            itm = wsample(pc, wc)
+            #            @info "Below!"
         else
-#            @info "Above!"
+            #            @info "Above!"
             accept = false
-            itm =  c+sample_alias(rng,al)
+            itm = c+sample_alias(rng, al)
             nattempts = 1
-            Qv = @view Q[:,1:(ind-1)]
+            Qv = @view Q[:, 1:(ind-1)]
             while !accept
-                pp = p0[itm] - sum((Qv'*U[itm,:]).^2)
+                pp = p0[itm] - sum((Qv'*U[itm, :]) .^ 2)
                 if (rand() < pp/p0[itm])
                     accept = true
                 else
-                itm = c+sample_alias(rng,al)
-                nattempts+=1
+                    itm = c+sample_alias(rng, al)
+                    nattempts+=1
                 end
                 (nattempts > 1e4) && error("Too many attempts at iteration $(ind)")
             end
         end
-        push!(inds,itm)
-        f = vec(U[itm,:])
+        push!(inds, itm)
+        f = vec(U[itm, :])
         #Gram-Schmidt
         f -= Q*Q'*f
-        Q[:,ind] = f/norm(f)
+        Q[:, ind] = f/norm(f)
         #update prob. below threshold
-        pc = pc .- vec(U[1:c,:]*Q[:,ind]).^2
+        pc = pc .- vec(U[1:c, :]*Q[:, ind]) .^ 2
     end
     collect(inds)
 end
 
 function sample_pdpp_ar(U)
-    sample_pdpp_ar(U,lvg(U))
+    sample_pdpp_ar(U, lvg(U))
 end
 
-function sample_pdpp_ar(U,lvg)
-    n = size(U,1)
-    m = size(U,2)
+function sample_pdpp_ar(U, lvg)
+    n = size(U, 1)
+    m = size(U, 2)
     #Initial distribution
     p0 = copy(lvg)
     al = setup_alias(p0)
-    rng = MersenneTwister()
-    Q = zeros(eltype(U),m,m)
+    rng = default_rng()
+    Q = zeros(eltype(U), m, m)
     inds = BitSet()
-    f = zeros(eltype(U),m)
+    f = zeros(eltype(U), m)
     max_attempts = 150*m
-    for ind in 1:m
+    for ind = 1:m
         accept = false
-        itm =  sample_alias(rng,al)
+        itm = sample_alias(rng, al)
         nattempts = 1
-        Qv = @view Q[:,1:(ind-1)]
+        Qv = @view Q[:, 1:(ind-1)]
         while !accept
             while (itm ∈ inds)
-                itm = sample_alias(rng,al)
+                itm = sample_alias(rng, al)
             end
-            pp = p0[itm] - sum(abs2.(Qv'*U[itm,:]))
+            pp = p0[itm] - sum(abs2.(Qv'*U[itm, :]))
             if (rand() < pp/p0[itm])
                 accept = true
             else
-                itm = sample_alias(rng,al)
+                itm = sample_alias(rng, al)
                 nattempts+=1
             end
             if (nattempts > max_attempts)
-                error("Too many A/R attempts, $(nattempts) at index $(ind). Make sure that U is actually an orthonormal matrix")
+                error(
+                    "Too many A/R attempts, $(nattempts) at index $(ind). Make sure that U is actually an orthonormal matrix",
+                )
             end
         end
-        push!(inds,itm)
-        f .= U[itm,:]
+        push!(inds, itm)
+        f .= U[itm, :]
         #Gram-Schmidt
         f -= Qv*(Qv'*f)
-        Q[:,ind] = f/norm(f)
+        Q[:, ind] = f/norm(f)
     end
     #collect(inds),Q
     collect(inds)
@@ -191,54 +192,54 @@ end
 
 
 #slow!!! reimplement in block-wise manner
-function early_reject(itm,Qv,Ui,ind,p0)
+function early_reject(itm, Qv, Ui, ind, p0)
     u = rand()
     pp = p0[itm]
     reject = false
-    for j in 1:(ind-1)
-        pp -= dot(Ui,Qv[:,j])^2
+    for j = 1:(ind-1)
+        pp -= dot(Ui, Qv[:, j])^2
         if (u > pp/p0[itm])
             reject = true
             break
         end
     end
     reject
-end   
+end
 
 #ar with early reject
 function sample_pdpp_er(U)
-    n = size(U,1)
-    m = size(U,2)
+    n = size(U, 1)
+    m = size(U, 2)
     #Initial distribution
     p0 = lvg(U)
     al = setup_alias(p0)
-    rng = MersenneTwister()
-    Q = zeros(Float64,m,m)
+    rng = default_rng()
+    Q = zeros(Float64, m, m)
     inds = BitSet()
-    for ind in 1:m
+    for ind = 1:m
         accept = false
-        itm =  sample_alias(rng,al)
+        itm = sample_alias(rng, al)
         nattempts = 1
         if (ind > 1)
             reject = true
-            Ui = @view U[itm,:]
-            Qv = @view Q[:,1:(ind-1)]
+            Ui = @view U[itm, :]
+            Qv = @view Q[:, 1:(ind-1)]
             while reject
                 nattempts += 1
                 (nattempts > 1e4) && error("Too many attempts")
-                
-                reject = early_reject(itm,Qv,Ui,ind,p0)
+
+                reject = early_reject(itm, Qv, Ui, ind, p0)
                 if reject
-                    itm =  sample_alias(rng,al)
-                    Ui = @view U[itm,:]
+                    itm = sample_alias(rng, al)
+                    Ui = @view U[itm, :]
                 end
             end
         end
-        push!(inds,itm)
-        f = vec(U[itm,:])
+        push!(inds, itm)
+        f = vec(U[itm, :])
         #Gram-Schmidt
         f -= Q*Q'*f
-        Q[:,ind] = f/norm(f)
+        Q[:, ind] = f/norm(f)
     end
     collect(inds)
 end
@@ -246,7 +247,7 @@ end
 
 
 
-function sample_alias(rng::AbstractRNG,al)
+function sample_alias(rng::AbstractRNG, al)
     #s = Sampler(rng, 1:n)
     a = 1:length(al.ap)
     # for i = 1:length(x)
@@ -259,15 +260,18 @@ function setup_alias(lv)
     ap = Vector{Float64}(undef, n)
     alias = Vector{Int}(undef, n)
     make_alias_table!(lv, sum(lv), ap, alias)
-    (ap=ap,alias=alias)
+    (ap = ap, alias = alias)
 end
 
 
 
 #taken from StatsBase
-function make_alias_table!(w::AbstractVector, wsum,
-                           a::AbstractVector{Float64},
-                           alias::AbstractVector{Int})
+function make_alias_table!(
+    w::AbstractVector,
+    wsum,
+    a::AbstractVector{Float64},
+    alias::AbstractVector{Int},
+)
     # Arguments:
     #
     #   w [in]:         input weights
@@ -306,8 +310,10 @@ function make_alias_table!(w::AbstractVector, wsum,
     end
 
     while kl > 0 && ks > 0
-        s = smalls[ks]; ks -= 1  # pop from smalls
-        l = larges[kl]; kl -= 1  # pop from larges
+        s = smalls[ks]
+        ks -= 1  # pop from smalls
+        l = larges[kl]
+        kl -= 1  # pop from larges
         @inbounds alias[s] = l
         @inbounds al = a[l] = (a[l] - 1.0) + a[s]
         if al > 1.0

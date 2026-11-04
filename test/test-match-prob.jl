@@ -20,9 +20,9 @@ using Test
     @test new_ip ≈ target_pr rtol=1e-6
 
     A = randn(10, 4)
-    A  = A/(1.1*maximum(svd(A).S))
+    A = A/(1.1*maximum(svd(A).S))
     K_lr = MarginalDPP(LowRank(A))
-    target_pr_lr = inclusion_prob(K_lr).*rand(nitems(K_lr))
+    target_pr_lr = inclusion_prob(K_lr) .* rand(nitems(K_lr))
     K_modified_lr = match_prob(K_lr, target_pr_lr)
 
 
@@ -47,7 +47,7 @@ end
     L = EllEnsemble(LowRank(A))
 
     target_pr = rand(nitems(L))
-    target_pr *= .9*maxrank(L)/sum(target_pr)
+    target_pr *= 0.9*maxrank(L)/sum(target_pr)
 
     L_modified = match_prob(L, target_pr)
 

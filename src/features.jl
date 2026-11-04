@@ -1,7 +1,7 @@
 #using LoopVectorization
 
 function vdm(x::Array{T,1}, order::Int) where {T<:Real}
-    return [u^k for u in x, k in 0:order]
+    return [u^k for u in x, k = 0:order]
 end
 
 """
@@ -33,16 +33,16 @@ function polyfeatures(x::AbstractVector, degree)
     if (d == 1)
         F = vdm(x, degree)
     else
-        F[:, 1:(degree + 1)] = vdm([x[1] for x in x], degree)
-        tdeg[1:(degree + 1)] = 0:degree
+        F[:, 1:(degree+1)] = vdm([x[1] for x in x], degree)
+        tdeg[1:(degree+1)] = 0:degree
         tot = degree + 1
-        for dd in 2:d
-            for i in 1:tot
+        for dd = 2:d
+            for i = 1:tot
                 delta = degree - tdeg[i]
                 if (delta > 0)
                     idx = i
-                    for j in 1:delta
-                        F[:, tot + 1] = F[:, idx] .* [x[dd] for x in x]
+                    for j = 1:delta
+                        F[:, tot+1] = F[:, idx] .* [x[dd] for x in x]
                         tot += 1
                         tdeg[tot] = tdeg[idx] + 1
                         idx = tot
@@ -142,7 +142,7 @@ function nystrom_approx(x::AbstractVector, ker::Kernel, m::Integer)
     return nystrom_approx(x, ker, ind)
 end
 
-function nystrom_approx(K::AbstractMatrix, ind :: AbstractVector)
+function nystrom_approx(K::AbstractMatrix, ind::AbstractVector)
     Kaa = K[ind, ind]
     U = cholesky(Kaa).L
     #K[:,ind] * inv(U')
@@ -182,12 +182,12 @@ function gaussker(X::AbstractVector)
 end
 
 #Quick estimate for median distance
-function estmediandist(X::AbstractVector; m=1000)
+function estmediandist(X::AbstractVector; m = 1000)
     n = length(X)
     if (n > m)
         sel = rand(1:n, m)
     else
         sel = 1:n
     end
-    return StatsBase.median(KernelFunctions.pairwise(Euclidean(), X[sel], X[sel]))
+    return StatsBase.median(Distances.pairwise(Euclidean(), X[sel], X[sel]))
 end

@@ -1,7 +1,7 @@
 @testset "solve_sp" begin
     f = (ls) -> sum(ls ./ (1 .+ ls))
     ls = collect(1:10)
-    for k in 1:9
+    for k = 1:9
         α = Determinantal.solve_sp(ls, k)
         @test abs(f(α * ls) - k) < 1e-5
     end

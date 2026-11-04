@@ -8,7 +8,7 @@ We use an old dataset called the Jester dataset (Goldberg et al., 2001), availab
 =#
 
 ##Load some packages
-using Plots,Statistics,LinearAlgebra,JLD2
+using Plots, Statistics, LinearAlgebra, JLD2
 
 ##Load the dataset
 @load "recommendation/jester_data.jld2" jester_ratings jester_jokes;
@@ -20,28 +20,28 @@ using Plots,Statistics,LinearAlgebra,JLD2
 Each row in jester_ratings contains the ratings of a single user. Jokes are rated from -10 to 10, missing ratings are encoded as missing values. Some users are more enthusiastic than others (they give higher scores on average). We will need to take this into account when computing the average quality of a joke. Other users always give the same score, so we filter them out.
 =#
 
-user_mean = map(mean ∘ skipmissing,eachrow(jester_ratings));
-user_sd = map(std ∘ skipmissing,eachrow(jester_ratings));
-histogram(user_mean,title="Mean user rating")
-scatter(user_mean,user_sd,xlab="Mean rating",ylab="Std. dev of rating")
+user_mean = map(mean ∘ skipmissing, eachrow(jester_ratings));
+user_sd = map(std ∘ skipmissing, eachrow(jester_ratings));
+histogram(user_mean, title = "Mean user rating")
+scatter(user_mean, user_sd, xlab = "Mean rating", ylab = "Std. dev of rating")
 
-keep = user_sd .> .5
-valid_ratings = jester_ratings[keep,:];
+keep = user_sd .> 0.5
+valid_ratings = jester_ratings[keep, :];
 
 ##Now we standardise the ratings
 scaled_ratings = (valid_ratings .- user_mean[keep]) ./ user_sd[keep];
 
 # Now that the scores are cleaned up and standardised, we can compute an aggregate score for each joke. Here we use the median rating.
 
-joke_scores = map(median ∘ skipmissing,eachcol(scaled_ratings));
-joke_sds = map(std ∘ skipmissing,eachcol(scaled_ratings));
+joke_scores = map(median ∘ skipmissing, eachcol(scaled_ratings));
+joke_sds = map(std ∘ skipmissing, eachcol(scaled_ratings));
 ## Higher-rated jokes are more consensual across users
-scatter(joke_scores,joke_sds,xlab="Median joke score",ylab="Std. dev of score")
+scatter(joke_scores, joke_sds, xlab = "Median joke score", ylab = "Std. dev of score")
 
 ## Show the "best" and "worst" jokes
 sp=sortperm(joke_scores)
-println("Worst-rated joke: \n "* jester_jokes[sp[1]] * "\n")
-println("Best-rated joke: \n "* jester_jokes[sp[end]] * "\n")
+println("Worst-rated joke: \n " * jester_jokes[sp[1]] * "\n")
+println("Best-rated joke: \n " * jester_jokes[sp[end]] * "\n")
 
 
 #=
@@ -65,9 +65,9 @@ The matrix of embeddings is a 100x384 matrix, where each row is a vector of feat
 
 println("Target joke: "*jester_jokes[16]*"\n")
 ## Compute similarity:
-sim=jester_embeddings*jester_embeddings[16,:];
-sp=sortperm(sim,rev=true)
-for i in 1:4
+sim=jester_embeddings*jester_embeddings[16, :];
+sp=sortperm(sim, rev = true)
+for i = 1:4
     println("Most similar $i: "*jester_jokes[sp[i+1]]*"\n")
 end
 
@@ -99,7 +99,7 @@ ell = EllEnsemble(Q*S*Q');
 #=
 In order to get a certain number of jokes on average (here 5), we need to rescale the L-ensemble
 =#
-rescale!(ell,5)
+rescale!(ell, 5)
 #=
 What this does is rescale the L-ensemble to $αQSQ^\top$
 with α, a scalar, set such that the expected sample size is 5.
@@ -116,7 +116,7 @@ size_statistics(ell);
 The mean is at 5 as expected, but the standard deviation is ~2. That gives a fair chance of returning no jokes at all. If we want a sample with a fixed size, one way is to use a fixed-size DPP (AKA k-DPP).
 =#
 
-Determinantal.sample(ell,5); ##returns a set of size 5, always
+Determinantal.sample(ell, 5); ##returns a set of size 5, always
 
 #=
 Another way is to modify the rank of the DPP, or play with the eigenvalues - this is a more advanced topic.
@@ -129,8 +129,8 @@ The inclusion probability of joke $i$ is the prob. that it appears
 in the random set produced by the DPP.
 =#
 
-scatter(joke_scores,inclusion_prob(ell),xlab="Score",ylab="Prob. inclusion") ##Standard DPP
-scatter!(joke_scores,inclusion_prob(ell,5)) ##Fixed-size DPP (nearly equal)
+scatter(joke_scores, inclusion_prob(ell), xlab = "Score", ylab = "Prob. inclusion") ##Standard DPP
+scatter!(joke_scores, inclusion_prob(ell, 5)) ##Fixed-size DPP (nearly equal)
 
 #=
 Notice how the inclusion probabilities mostly scale with the quality index,
@@ -140,5 +140,5 @@ strict function of the quality index, use match_prob. It will produce a differen
 
 q = exp.(joke_scores); ##We want our inclusion probabilities to be proportional to q
 q = (q/sum(q))*5; ##We want them to sum to 5, because that's the target size
-ell_matched = match_prob(EllEnsemble(S),q); ##This calls a numerical minimisation routine, it may be a bit slow
-scatter(joke_scores,inclusion_prob(ell_matched),xlab="Score",ylab="Prob. inclusion")
+ell_matched = match_prob(EllEnsemble(S), q); ##This calls a numerical minimisation routine, it may be a bit slow
+scatter(joke_scores, inclusion_prob(ell_matched), xlab = "Score", ylab = "Prob. inclusion")

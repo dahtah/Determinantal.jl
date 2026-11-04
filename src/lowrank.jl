@@ -32,8 +32,8 @@ end
 function LinearAlgebra.eigen(K::LowRank)
     eg = eigen(K.A' * K.A)
     U = K.A * eg.vectors
-    U = U ./ sqrt.(sum(U .^ 2; dims=1))
-    return (vectors=U, values=eg.values)
+    U = U ./ sqrt.(sum(U .^ 2; dims = 1))
+    return (vectors = U, values = eg.values)
 end
 
 function Base.size(K::LowRank)

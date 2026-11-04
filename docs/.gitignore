@@ -1,2 +1,3 @@
 # Generated markdown files (from Literate.jl notebooks)
+/src/notebooks/*.md
 /src/notebooks/*/*.md

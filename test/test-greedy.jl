@@ -39,5 +39,5 @@ Random.seed!(42)
     # Test with diagonal matrix (easy case)
     D = Diagonal([1.0, 0.5, 0.1, 0.01])
     ind_diag = greedy_subset(D, 2)
-    @test sort(ind_diag) == [1,2]
+    @test sort(ind_diag) == [1, 2]
 end

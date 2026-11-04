@@ -25,8 +25,8 @@ function MarginalDPP(V::AbstractMatrix{T}) where {T}
     if maximum(λ) > 1.0
         @warn "Clipping eigenvalues > 1 to 1"
         λ[λ .> 1] .= 1.0
-        if isa(K,LowRank)
-            K.A .=U*Diagonal(sqrt.(λ))
+        if isa(K, LowRank)
+            K.A .= U*Diagonal(sqrt.(λ))
         else
             K .= Symmetric(U*Diagonal(λ)*U')
         end
@@ -46,8 +46,8 @@ end
 
 #The void probability is the probability that none of the items in ind
 #are selected.
-function void_prob(M::MarginalDPP,ind)
-    det(I - M.K[ind,ind])
+function void_prob(M::MarginalDPP, ind)
+    det(I - M.K[ind, ind])
 end
 
 function inclusion_prob(M::MarginalDPP)
@@ -69,7 +69,7 @@ end
 
 function size_statistics(M::MarginalDPP)
     p = M.λ
-    return (mean=sum(p), std=sqrt(sum(p .* (1 .- p))))
+    return (mean = sum(p), std = sqrt(sum(p .* (1 .- p))))
 end
 
 @doc raw"""
@@ -101,10 +101,10 @@ function log_prob(M::MarginalDPP, ind)
         B = setdiff(1:nitems(M), ind)
         A = ind
         K = M.K
-        C = cholesky(Symmetric(K[A, A]), check=false)
+        C = cholesky(Symmetric(K[A, A]), check = false)
         !issuccess(C) && return -Inf
         S = Symmetric(I - (K[B, B] - K[B, A] * (C \ K[A, B])))
-        CS = cholesky(S, check=false)
+        CS = cholesky(S, check = false)
         !issuccess(CS) && return -Inf
         return logdet(C) + logdet(CS)
     end
@@ -133,7 +133,7 @@ function mgf(M::MarginalDPP, t::Vector)
     det(I - Diagonal(b) * M.K)
 end
 
-function mgf(M::MarginalDPP,t :: Number)
+function mgf(M::MarginalDPP, t::Number)
     b = 1-exp(t)
-    prod( 1 .- b * M.λ )
+    prod(1 .- b * M.λ)
 end

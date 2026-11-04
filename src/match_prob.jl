@@ -17,7 +17,7 @@ inclusion_prob(match_prob(K,[.6,.7,.8]))
 function match_prob(K::MarginalDPP, pr)
     d = pr ./ inclusion_prob(K)
     D = Diagonal(sqrt.(d))
-    if isa(K.K,LowRank)
+    if isa(K.K, LowRank)
         MarginalDPP(LowRank(D*K.K.A))
     else
         MarginalDPP(Symmetric(D * K.K * D))
@@ -44,17 +44,17 @@ If the solver is successful, returns a diagonally rescaled L-ensemble whose incl
 
 
 """
-function match_prob(L :: AbstractLEnsemble, pr)
+function match_prob(L::AbstractLEnsemble, pr)
     @assert sum(pr) <= maxrank(L) "Sum of inclusion probabilities is larger than rank of L-ensemble, matching is impossible"
     ip = (v) -> compute_inc_prob(L.L, exp.(v))
     f = (v) -> ip(v) - pr
     res = nlsolve(f, ones(nitems(L)))
     if res.f_converged
         D=Diagonal(exp.(res.zero))
-        if isa(L.L,LowRank)
+        if isa(L.L, LowRank)
             return EllEnsemble(LowRank(D*L.L.A))
         else
-            return  EllEnsemble(Symmetric(D*L.L*D))
+            return EllEnsemble(Symmetric(D*L.L*D))
         end
     else
         #res
@@ -63,19 +63,19 @@ function match_prob(L :: AbstractLEnsemble, pr)
 end
 
 #Compute diag(I-(D*L*D+I)^(-1))
-function compute_inc_prob(L :: AbstractMatrix,d)
+function compute_inc_prob(L::AbstractMatrix, d)
     D=Diagonal(d)
     C = cholesky(Symmetric(D*L*D+I))
-    diag_inv = sum(abs2, inv(C.L), dims=1)[:]
+    diag_inv = sum(abs2, inv(C.L), dims = 1)[:]
     1 .- diag_inv
     # C = cholesky(L+Diagonal(d.^(-2)))
     # diag_inv = sum(abs2, inv(C.L), dims=1)[:]
     # 1 .- (d.^(-2)) .* diag_inv
- end
+end
 
-function compute_inc_prob(L :: LowRank,d)
-    diag_inv = diag_inv_AAt_plus_D(L.A, d.^(-2))
-    1 .- (d.^(-2)) .* diag_inv
+function compute_inc_prob(L::LowRank, d)
+    diag_inv = diag_inv_AAt_plus_D(L.A, d .^ (-2))
+    1 .- (d .^ (-2)) .* diag_inv
 end
 
 
@@ -83,5 +83,5 @@ end
 function diag_inv_AAt_plus_D(A, d)
     L_C = cholesky(Symmetric(I+A'*Diagonal(1 ./ d)*A)).L
     W = L_C \ A'          # BLAS triangular solve: W = L_C⁻¹ A'
-    (d - sum(abs2, W, dims=1)[:]) ./ (d.^2)
+    (d - sum(abs2, W, dims = 1)[:]) ./ (d .^ 2)
 end

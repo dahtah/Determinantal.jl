@@ -158,7 +158,7 @@ end
 
     # Check that Nyström is exact in the limit where we include all points
     K_full = kernelmatrix(ker, X)
-    N4 = nystrom_approx(X, ker, 1:length(X) )
+    N4 = nystrom_approx(X, ker, 1:length(X))
     @test K_full ≈ Matrix(N4)
 end
 
@@ -167,7 +167,7 @@ end
     x = [0.0, 1.0, 2.0, 3.0]
     X = ColVecs([x zeros(4)]')  # 4 points in 1D
 
-    d1 = Determinantal.estmediandist(X, m=10)
+    d1 = Determinantal.estmediandist(X, m = 10)
     @test isa(d1, Real)
     @test d1 > 0
 
@@ -183,6 +183,6 @@ end
     @test 0 < d2 < 10  # Very loose bounds
 
     # Test with m parameter (subsampling)
-    d3 = Determinantal.estmediandist(X2d, m=5)
+    d3 = Determinantal.estmediandist(X2d, m = 5)
     @test isa(d3, Real)
 end

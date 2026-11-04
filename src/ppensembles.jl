@@ -91,14 +91,14 @@ function inclusion_prob(L::ExtEnsemble, k)
     @assert k >= maxrank(L.Lproj)
     m = k - maxrank(L.Lproj)
     if (m == 0)
-        sum((L.Lproj.U) .^ 2; dims=2)
+        sum((L.Lproj.U) .^ 2; dims = 2)
     else
         val = inclusion_prob_diag(λ, m)
         val[val .< 0] .= 0
         val[val .> 1] .= 1
         val = (val ./ sum(val)) .* m
-        return sum((L.Lopt.U * Diagonal(sqrt.(val))) .^ 2; dims=2) +
-               sum((L.Lproj.U) .^ 2; dims=2)
+        return sum((L.Lopt.U * Diagonal(sqrt.(val))) .^ 2; dims = 2) +
+               sum((L.Lproj.U) .^ 2; dims = 2)
     end
 end
 

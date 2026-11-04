@@ -36,11 +36,11 @@ function greedy_subset(L::AbstractMatrix, k)
     Q = ones(1, 1) ./ L[i, i]
     Lv = L[:, i]
     dL = diag(L)
-    for iter in 2:k
+    for iter = 2:k
         #ld = diag(L) - Q*Lv
         opti = 0
         optv = 0
-        @inbounds for i in 1:n
+        @inbounds for i = 1:n
             if i ∉ ind
                 dets[i] = L[i, i] - dot(Lv[i, :], Q * Lv[i, :])
                 if (optv < dets[i])
@@ -58,7 +58,7 @@ function greedy_subset(L::AbstractMatrix, k)
         if (opti <= 0) && iter < k
             break
         end
-        if (any(dets .< -.01)) #Q is probably bad
+        if (any(dets .< -0.01)) #Q is probably bad
             #Recompute matrix inverse
             indc = [collect(ind); opti]
             Q = inv(L[indc, indc])

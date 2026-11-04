@@ -20,7 +20,7 @@ mutable struct EllEnsemble{T} <: AbstractLEnsemble
         @assert size(L, 1) == size(L, 2)
         eg = eigen(L)
         U = eg.vectors
-        λ = max.(eg.values, eps(T))
+        λ = [max(real(v), eps(T)) for v in eg.values]
         n = size(L, 1)
         return new(L, U, λ, n, length(λ), T(1.0))
     end
@@ -85,7 +85,7 @@ mutable struct ProjectionEnsemble{T} <: AbstractLEnsemble
     n::Int64
     m::Int64
     α::T
-    function ProjectionEnsemble{T}(M::Matrix{T}, orth=true) where {T}
+    function ProjectionEnsemble{T}(M::Matrix{T}, orth = true) where {T}
         n, m = size(M)
         @assert size(M, 1) >= size(M, 2)
         if (orth)
@@ -101,7 +101,8 @@ end
 function show(io::IO, e::ProjectionEnsemble)
     println(io, "Projection DPP.")
     return println(
-        io, "Number of items in ground set : $(nitems(e)). Max. rank : $(maxrank(e))."
+        io,
+        "Number of items in ground set : $(nitems(e)). Max. rank : $(maxrank(e)).",
     )
 end
 
@@ -110,7 +111,7 @@ MarginalDPP(L::AbstractLEnsemble) = MarginalDPP(Symmetric(marginal_kernel(L)))
 
 function MarginalDPP(L::EllEnsemble)
     p = L.α * L.λ ./ (1 .+ L.α * L.λ)
-    if isa(L.L,LowRank)
+    if isa(L.L, LowRank)
         K = LowRank(L.U*Diagonal(sqrt.(p)))
     else
         K = L.U*Diagonal(p)*L.U'
@@ -123,7 +124,7 @@ function EllEnsemble(M::MarginalDPP)
     cond = all(0 .< M.λ .< 1)
     @assert cond "All eigenvalues must be positive and < 1"
     l = M.λ ./ (1 .- M.λ)
-    if isa(M.K,LowRank)
+    if isa(M.K, LowRank)
         L = LowRank(M.U*Diagonal(sqrt.(l)))
     else
         L = M.U*Diagonal(l)*M.U'
@@ -140,7 +141,7 @@ Construct a projection ensemble from a matrix of features. Here we assume
 ``\mathbf{L} = \mathbf{V}\mathbf{V}^t``, so that V must be n \times r, where n is the number of items and r is the rank.
 V needs not be orthogonal. If orth is set to true (default), then a QR decomposition is performed. If V is orthogonal already, then this computation may be skipped, and you can set orth to false.
 """
-ProjectionEnsemble(V::Matrix{T}, orth=true) where {T} = ProjectionEnsemble{T}(V, orth)
+ProjectionEnsemble(V::Matrix{T}, orth = true) where {T} = ProjectionEnsemble{T}(V, orth)
 
 
 function MarginalDPP(L::ProjectionEnsemble)
@@ -168,7 +169,7 @@ end
 function rescale!(L::ProjectionEnsemble, k)
     return throw(
         ArgumentError(
-            "Cannot rescale a projection DPP: the set size is fixed and equals the rank."
+            "Cannot rescale a projection DPP: the set size is fixed and equals the rank.",
         ),
     )
 end
@@ -186,7 +187,7 @@ function inclusion_prob(L::AbstractLEnsemble)
 end
 
 function inclusion_prob(L::ProjectionEnsemble)
-    return sum((L.U) .^ 2; dims=2)
+    return sum((L.U) .^ 2; dims = 2)
 end
 
 """
@@ -201,14 +202,14 @@ void_prob(K,1:2) #Prob. that neither 1 nor 2 are selected
 ```
 
 """
-function void_prob(L::AbstractLEnsemble,ind)
+function void_prob(L::AbstractLEnsemble, ind)
     val = L.α * L.λ ./ (1 .+ L.α * L.λ)
-    C = L.U[ind,:]* Diagonal(sqrt.(val))
+    C = L.U[ind, :] * Diagonal(sqrt.(val))
     return det(I-C'*C)
 end
 
-function void_prob(L::ProjectionEnsemble,ind)
-    A=@view L.U[ind,:]
+function void_prob(L::ProjectionEnsemble, ind)
+    A=@view L.U[ind, :]
     return det(I-A'*A)
 end
 
@@ -245,15 +246,15 @@ Sample from a projection DPP. If nsamples > 1, return a vector of nsamples reali
     sample(Pp,nsamples=5) #should output a vector of 5 realisations
 ```
 """
-function sample(L::ProjectionEnsemble;nsamples=1)
+function sample(L::ProjectionEnsemble; nsamples = 1)
     #use A/R alg?
     use_ar = (round(L.n / L.m) > 10) ? true : false
     if (nsamples > 1) #some improvements for repeated sampling
         lv = lvg(L.U)
         if (use_ar)
-            [sample_pdpp_ar(L.U,lv) for _ in 1:nsamples]
+            [sample_pdpp_ar(L.U, lv) for _ = 1:nsamples]
         else
-            [sample_pdpp(L.U,lv) for _ in 1:nsamples]
+            [sample_pdpp(L.U, lv) for _ = 1:nsamples]
         end
     else
         if (use_ar)
@@ -286,7 +287,7 @@ The size of the set sampled by a DPP is a random variable. This function returns
 """
 function size_statistics(L::AbstractLEnsemble)
     p = L.α * L.λ ./ (1 .+ L.α * L.λ)
-    return (mean=sum(p), std=sqrt(sum(p .* (1 .- p))))
+    return (mean = sum(p), std = sqrt(sum(p .* (1 .- p))))
 end
 
 function diag(L::EllEnsemble)
@@ -294,7 +295,7 @@ function diag(L::EllEnsemble)
 end
 
 function diag(L::ProjectionEnsemble)
-    return vec(sum(L.U .^ 2; dims=2))
+    return vec(sum(L.U .^ 2; dims = 2))
 end
 
 function getindex(L::EllEnsemble, I...)
@@ -361,22 +362,22 @@ function logz(L::ProjectionEnsemble)
     return 0
 end
 
-function mgf(L::EllEnsemble,t::Vector)
+function mgf(L::EllEnsemble, t::Vector)
     D=Diagonal(exp.(t / 2))
     return det(Symmetric(I+L.α*D*L.L*D))/prod(1 .+ L.α*L.λ)
 end
 
-function mgf(L::EllEnsemble,t::Number)
+function mgf(L::EllEnsemble, t::Number)
     return prod(1 .+ L.α*exp(t)*L.λ)/prod(1 .+ L.α*L.λ)
 end
 
 
-function mgf(L::ProjectionEnsemble,t::Number)
+function mgf(L::ProjectionEnsemble, t::Number)
     return exp(t*L.m)
 end
 
-function mgf(L::ProjectionEnsemble,t::Vector)
-    return prod(svd(Diagonal(exp.(.5*t))*L.U).S)^2
+function mgf(L::ProjectionEnsemble, t::Vector)
+    return prod(svd(Diagonal(exp.(0.5*t))*L.U).S)^2
 end
 
 
