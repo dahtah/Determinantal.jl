@@ -6,12 +6,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.0]
 
+### Breaking
+
+- Minimum Julia version raised from 1.6 to 1.10.
+- `cardinal` renamed to `size_statistics` (same `(mean, std)` return value);
+  calls to `cardinal` now error.
+- `MarginalDPP(V)` no longer throws when the kernel has eigenvalues > 1;
+  they are clipped to 1 with a warning instead.
+- `nystrom_approx(K, ind)` now requires `ind::AbstractVector`; new methods take
+  raw data and a kernel object: `nystrom_approx(x, ker, ind)` / `(x, ker, m)`.
+- Dropped dependencies `LoopVectorization` and `NearestNeighbors`, added
+  `NLsolve`; compat bumps `KernelFunctions` 0.10 → 0.11 and `StatsBase` 0.33 → 0.34.
+- Removed unexported internals (`rff_fused`, `EllEnsIE`, `condition_inclusion`,
+  `isample`, `iesample`); use the exported `condition_on` instead.
+
 ### Added
 
 - Partial support for sampling from Hermitian projection ensembles.
-- Conditioning of marginal-kernel DPPs (`condition_on`) and the `EllEnsIE` type
-  for conditioning L-ensembles on inclusion/exclusion of items.
-- `match_prob` / `match_prob_nl` for match probabilities between samples.
+- Conditioning of DPPs on inclusion/exclusion of items via the exported
+  `condition_on(K; incl, excl)`.
+- `match_prob` for rescaling an L-ensemble or marginal DPP to match target
+  inclusion probabilities.
 - Void probabilities and a moment-generating function for DPP sizes.
 - Rescaling to match given inclusion probabilities (`rescale!` improvements).
 - Partial support for sampling from Hermitian projection ensembles.
