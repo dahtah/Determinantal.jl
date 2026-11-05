@@ -1,6 +1,9 @@
 using Determinantal
 using LinearAlgebra
 using Test
+using Random
+
+Random.seed!(1234) # deterministic test data (match_prob involves numerical optimisation)
 
 # Test for match_prob on MarginalDPP
 @testset "match_prob MarginalDPP" begin

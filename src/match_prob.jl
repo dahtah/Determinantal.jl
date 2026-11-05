@@ -46,8 +46,14 @@ If the solver is successful, returns a diagonally rescaled L-ensemble whose incl
 """
 function match_prob(L::AbstractLEnsemble, pr)
     @assert sum(pr) <= maxrank(L) "Sum of inclusion probabilities is larger than rank of L-ensemble, matching is impossible"
-    ip = (v) -> compute_inc_prob(L.L, exp.(v))
-    f = (v) -> ip(v) - pr
+    # Clamp the log-scale variables: for extreme iterates proposed by the
+    # solver, exp.(v) overflows and the Cholesky factorizations in
+    # compute_inc_prob become numerically indefinite (PosDefException).
+    ip = (v) -> compute_inc_prob(L.L, exp.(clamp.(v, -10, 10)))
+    f = (v) -> begin
+        r = ip(v) - pr
+        any(!isfinite, r) ? fill(1e10, length(pr)) : r # reject numerically invalid iterates
+    end
     res = nlsolve(f, ones(nitems(L)))
     if res.f_converged
         D=Diagonal(exp.(res.zero))
@@ -65,12 +71,10 @@ end
 #Compute diag(I-(D*L*D+I)^(-1))
 function compute_inc_prob(L::AbstractMatrix, d)
     D=Diagonal(d)
-    C = cholesky(Symmetric(D*L*D+I))
+    C = cholesky(Symmetric(D*L*D+I); check = false)
+    issuccess(C) || return fill(NaN, size(L, 1))
     diag_inv = sum(abs2, inv(C.L), dims = 1)[:]
     1 .- diag_inv
-    # C = cholesky(L+Diagonal(d.^(-2)))
-    # diag_inv = sum(abs2, inv(C.L), dims=1)[:]
-    # 1 .- (d.^(-2)) .* diag_inv
 end
 
 function compute_inc_prob(L::LowRank, d)
@@ -81,7 +85,9 @@ end
 
 #Compute the diagonal entries of the inverse of (A*A' + diag(d))
 function diag_inv_AAt_plus_D(A, d)
-    L_C = cholesky(Symmetric(I+A'*Diagonal(1 ./ d)*A)).L
+    C = cholesky(Symmetric(I+A'*Diagonal(1 ./ d)*A); check = false)
+    issuccess(C) || return fill(NaN, size(A, 1))
+    L_C = C.L
     W = L_C \ A'          # BLAS triangular solve: W = L_C⁻¹ A'
     (d - sum(abs2, W, dims = 1)[:]) ./ (d .^ 2)
 end

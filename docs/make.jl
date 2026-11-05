@@ -20,7 +20,7 @@ function generate_notebooks()
             fl = "$(nb).jl"
             Literate.markdown(fl, NOTEBOOKS_SRC_DIR; documenter = true, execute = true)
             cd(cur_dir)
-            Pkg.activate(".")
+            Pkg.activate(@__DIR__) # restore the docs environment, not the repo root
         else
             @warn "Notebook source file not found: $(nb_path)"
         end
